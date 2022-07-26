@@ -18291,6 +18291,10 @@
 	(TARGET_EXPLICIT_RELOCS): Default to HAVE_AS_EXPLICIT_RELOCS.
 	* config/loongarch/loongarch.opt: Regenerate.
 
+2022-07-26  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* config.gcc: prepare support for RISC-V rv128 little endian target
+
 2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR c/106016
