@@ -4784,6 +4784,7 @@ case "${target}" in
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
+		riscv128*) xlen=128 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
 
@@ -4824,7 +4825,7 @@ case "${target}" in
 		# Infer arch from --with-arch, --target, and --with-abi.
 		case "${with_arch}" in
 		rv32e* | rv32i* | rv32g* | rv64e* | rv64i* | rv64g* \
-		| rvi20* | rva20* | rva22* | rva23* | rvb23*)
+		| rvi20* | rva20* | rva22* | rva23* | rvb23* | rv128i* | rv128g*)
 			# OK.
 			;;
 		"")
@@ -4834,11 +4835,12 @@ case "${target}" in
 			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
 			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
 			lp64e) with_arch="rv64e" ;;
+			llp128 | llp128f | llp128d) with_arch="rv128gc" ;;
 			*) with_arch="rv${xlen}gc" ;;
 			esac
 			;;
 		*)
-			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32e, rv32i, rv32g, rv64e, rv64i, rv64g, or a profile." 1>&2
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32e, rv32i, rv32g, rv64e, rv64i, rv64g, rv128i, rv128g, or a profile." 1>&2
 			exit 1
 			;;
 		esac
@@ -4852,7 +4854,7 @@ case "${target}" in
 		# pick a default based on the ISA, preferring soft-float
 		# unless the D extension is present.
 		case "${with_abi}" in
-		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64e | lp64f | lp64d)
+		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64e | lp64f | lp64d | llp128 | llp128f | llp128d)
 			;;
 		"")
 			case "${with_arch}" in
@@ -4862,6 +4864,8 @@ case "${target}" in
 			rv64*d* | rv64g*) with_abi=lp64d ;;
 			rv64e*) with_abi=lp64e ;;
 			rv64*) with_abi=lp64 ;;
+			rv128*d* | rv128g*) with_abi=llp128d ;;
+			rv128*) with_abi=llp128 ;;
 			esac
 			;;
 		*)
@@ -4884,7 +4888,10 @@ case "${target}" in
 		| lp64,rvi20u64* | lp64f,rvi20u64* \
 		| lp64d,rva20u64* | lp64d,rva22u64* \
 		| lp64d,rva23u64* | lp64d,rva23s64* \
-		| lp64d,rvb23u64* | lp64d,rvb23s64)
+		| lp64d,rvb23u64* | lp64d,rvb23s64 \
+		| llp128,rv128* \
+		| llp128f,rv128*f* | llp128f,rv128g* \
+		| llp128d,rv128*d* | llp128d,rv128g*)
 			;;
 		*)
 			echo "--with-abi=${with_abi} is not supported for ISA ${with_arch}" 1>&2
@@ -4934,7 +4941,8 @@ case "${target}" in
 
 			case ${with_multilib_list} in
 			ilp32 | ilp32f | ilp32d \
-			| lp64 | lp64f | lp64d )
+			| lp64 | lp64f | lp64d  \
+			| llp128 | llp128f | llp128d)
 				TM_MULTILIB_CONFIG="${with_arch},${with_multilib_list}"
 				;;
 			*)
