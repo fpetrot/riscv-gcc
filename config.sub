@@ -1251,7 +1251,7 @@ case $cpu-$vendor in
 			| powerpc | powerpc64 | powerpc64le | powerpcle | powerpcspe \
 			| pru \
 			| pyramid \
-			| riscv | riscv32 | riscv32be | riscv64 | riscv64be \
+			| riscv | riscv32 | riscv32be | riscv64 | riscv64be | riscv128 \
 			| rl78 | romp | rs6000 | rx \
 			| s390 | s390x \
 			| score \
