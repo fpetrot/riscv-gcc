@@ -1,5 +1,13 @@
 2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
 
+	* gcc/config/riscv/riscv-c.cc: add cases for rv128 ABIs
+	* gcc/config/riscv/riscv-d.cc: add cases for rv128 ABIs
+	* gcc/config/riscv/riscv-modes.def: add 32-bytes OI data type
+	* gcc/config/riscv/riscv.h: add rv128 data C data types and LLP128* ABIs
+	* gcc/config/riscv/riscv.md: prepare data types for rv128 backend
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
 	* target-def.h: add emission of 16-bytes unaligned integer 
 	* config/gcn/gcn.cc: add emission of 16-bytes aligned integer
 

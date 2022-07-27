@@ -75,8 +75,10 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
+#undef TARGET_128BIT
 /* Make this compile time constant for libgcc2 */
 #define TARGET_64BIT           (__riscv_xlen == 64)
+#define TARGET_128BIT          (__riscv_xlen == 128)
 #endif /* IN_LIBGCC2 */
 
 #ifdef HAVE_AS_MISA_SPEC
@@ -141,10 +143,10 @@ ASM_MISA_SPEC
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
-#define MAX_BITS_PER_WORD 64
+#define MAX_BITS_PER_WORD 128
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define UNITS_PER_WORD (TARGET_128BIT ? 16 : (TARGET_64BIT ? 8 : 4))
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
@@ -159,16 +161,17 @@ ASM_MISA_SPEC
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
   ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
-    || riscv_abi == ABI_LP64)						\
+    || riscv_abi == ABI_LP64 || riscv_abi == ABI_LLP128)		\
    ? 0 									\
-   : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F) ? 4 : 8))
+   : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F ||             \
+   riscv_abi == ABI_LLP128F) ? 4 : 8))
 
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
-#define LONG_LONG_TYPE_SIZE 64
-#define POINTER_SIZE (riscv_abi >= ABI_LP64 ? 64 : 32)
-#define LONG_TYPE_SIZE POINTER_SIZE
+#define LONG_LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 128 : 64)
+#define POINTER_SIZE (riscv_abi >= ABI_LLP128 ? 128 : (riscv_abi >= ABI_LP64 ? 64 : 32))
+#define LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 64 : POINTER_SIZE)
 
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
@@ -218,7 +221,7 @@ ASM_MISA_SPEC
 
 /* An integer expression for the size in bits of the largest integer machine
    mode that should actually be used.  We allow pairs of registers.  */
-#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_128BIT ? OImode : (TARGET_64BIT ? TImode : DImode))
 
 /* DATA_ALIGNMENT and LOCAL_ALIGNMENT common definition.  */
 #define RISCV_EXPAND_ALIGNMENT(COND, TYPE, ALIGN)			\
@@ -912,10 +915,12 @@ while (0)
 #define ASM_COMMENT_START "#"
 
 #undef SIZE_TYPE
-#define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
+#define SIZE_TYPE (POINTER_SIZE == 128 ? "long long unsigned int" : \
+		(POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int"))
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
+#define PTRDIFF_TYPE (POINTER_SIZE == 128 ? "long long int" : \
+		(POINTER_SIZE == 64 ? "long int" : "int"))
 
 /* The maximum number of bytes copied by one iteration of a cpymemsi loop.  */
 
@@ -960,6 +965,7 @@ extern unsigned riscv_stack_boundary;
 #define XLEN_SPEC \
   "%{march=rv32*:32}" \
   "%{march=rv64*:64}" \
+  "%{march=rv128*:128}" \
 
 #define ABI_SPEC \
   "%{mabi=ilp32:ilp32}" \
@@ -969,6 +975,9 @@ extern unsigned riscv_stack_boundary;
   "%{mabi=lp64:lp64}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
+  "%{mabi=llp128:llp128}" \
+  "%{mabi=llp128f:llp128f}" \
+  "%{mabi=llp128d:llp128d}" \
 
 /* ISA constants needed for code generation.  */
 #define OPCODE_LW    0x2003

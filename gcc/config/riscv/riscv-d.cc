@@ -29,7 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 void
 riscv_d_target_versions (void)
 {
-  if (TARGET_64BIT)
+  if (TARGET_128BIT)
+    d_add_builtin_version ("RISCV128");
+  else if (TARGET_64BIT)
     d_add_builtin_version ("RISCV64");
   else
     d_add_builtin_version ("RISCV32");
@@ -52,16 +54,19 @@ riscv_d_handle_target_float_abi (void)
     case ABI_ILP32E:
     case ABI_ILP32:
     case ABI_LP64:
+    case ABI_LLP128:
       abi = "soft";
       break;
 
     case ABI_ILP32F:
     case ABI_LP64F:
+    case ABI_LLP128F:
       abi = "single";
       break;
 
     case ABI_ILP32D:
     case ABI_LP64D:
+    case ABI_LLP128D:
       abi = "double";
       break;
 

@@ -20,3 +20,5 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+INT_MODE (OI, 32);

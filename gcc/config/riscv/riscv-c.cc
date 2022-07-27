@@ -72,16 +72,19 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 
     case ABI_ILP32:
     case ABI_LP64:
+    case ABI_LLP128:
       builtin_define ("__riscv_float_abi_soft");
       break;
 
     case ABI_ILP32F:
     case ABI_LP64F:
+    case ABI_LLP128F:
       builtin_define ("__riscv_float_abi_single");
       break;
 
     case ABI_ILP32D:
     case ABI_LP64D:
+    case ABI_LLP128D:
       builtin_define ("__riscv_float_abi_double");
       break;
     }
