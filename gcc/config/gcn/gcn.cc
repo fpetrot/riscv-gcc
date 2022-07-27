@@ -6532,6 +6532,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_ARG_PARTIAL_BYTES gcn_arg_partial_bytes
 #undef  TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.8byte\t"
+#undef  TARGET_ASM_ALIGNED_TI_OP
+#define TARGET_ASM_ALIGNED_TI_OP "\t.octa\t"
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START output_file_start
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
