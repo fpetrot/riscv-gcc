@@ -1005,6 +1005,11 @@ riscv_subset_list::parse (const char *arch, location_t loc)
       subset_list->m_xlen = 64;
       p += 4;
     }
+  else if (startswith (p, "rv128"))
+    {
+      subset_list->m_xlen = 128;
+      p += 5;
+    }
   else
     {
       error_at (loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
@@ -1174,11 +1179,18 @@ riscv_parse_arch_string (const char *isa,
 	   ++arch_ext_flag_tab)
 	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
 
-      if (subset_list->xlen () == 32)
+      if (subset_list->xlen () == 32) {
 	opts->x_target_flags &= ~MASK_64BIT;
-      else if (subset_list->xlen () == 64)
+	opts->x_target_flags &= ~MASK_128BIT;
+      }
+      else if (subset_list->xlen () == 64) {
 	opts->x_target_flags |= MASK_64BIT;
-
+	opts->x_target_flags &= ~MASK_128BIT;
+      }
+      else if (subset_list->xlen () == 128) {
+	opts->x_target_flags &= ~MASK_64BIT;
+	opts->x_target_flags |= MASK_128BIT;
+      }
 
       for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
 	   arch_ext_flag_tab->ext;

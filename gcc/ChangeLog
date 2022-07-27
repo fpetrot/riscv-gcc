@@ -1,3 +1,10 @@
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* gcc/config/riscv/riscv.opt: add MASK_128BIT flag and rv128 ABIs (LLP128/LLP128F/LLP128D)
+	* common/config/riscv/riscv-common.cc: add rv128 recognition and MASK_128BIT flag setup
+	* gcc/config/riscv/riscv-opts.h: add rv128 ABIs in riscv_abi_type enum definition
+	* gcc/config/riscv/arch-canonicalize: add rv128 extensions parsing
+
 2022-07-26  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
 
 	* config.gcc: prepare support for RISC-V rv128 little endian target

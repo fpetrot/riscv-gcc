@@ -70,6 +70,15 @@ Enum(abi_type) String(lp64f) Value(ABI_LP64F)
 EnumValue
 Enum(abi_type) String(lp64d) Value(ABI_LP64D)
 
+EnumValue
+Enum(abi_type) String(llp128) Value(ABI_LLP128)
+
+EnumValue
+Enum(abi_type) String(llp128f) Value(ABI_LLP128F)
+
+EnumValue
+Enum(abi_type) String(llp128d) Value(ABI_LLP128D)
+
 mfdiv
 Target Mask(FDIV)
 Use hardware floating-point divide and square root instructions.
@@ -133,6 +142,8 @@ Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
 
 Mask(64BIT)
+
+Mask(128BIT)
 
 Mask(MUL)
 
