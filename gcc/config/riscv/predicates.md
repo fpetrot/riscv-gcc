@@ -443,6 +443,11 @@
        (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (DImode) - 1))
                     == GET_MODE_BITSIZE (DImode) - 1")))
 
+(define_predicate "const_ti_mask_operand"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (TImode) - 1))
+                    == GET_MODE_BITSIZE (TImode) - 1")))
+
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 5")))
@@ -489,6 +494,10 @@
 (define_predicate "const_int6_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 63)")))
+
+(define_predicate "const_int7_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
 
 (define_predicate "int6_operand"
   (ior (match_operand 0 "const_int6_operand")
@@ -747,7 +756,7 @@
 
 (define_predicate "bitpos_mask_operand"
   (and (match_code "const_int")
-       (match_test "TARGET_64BIT ? INTVAL (op) == 63 : INTVAL (op) == 31")))
+       (match_test "TARGET_128BIT ? 127 : (TARGET_64BIT ? INTVAL (op) == 63 : INTVAL (op) == 31)")))
 
 (define_predicate "reg_or_const_int_operand"
   (ior (match_operand 0 "const_int_operand")
@@ -790,3 +799,7 @@
 (define_predicate "ads_extract_size_imm_di"
   (and (match_code "const_int")
 	   (match_test "IN_RANGE (INTVAL (op), 1, 64)")))
+
+(define_predicate "ads_extract_size_imm_ti"
+  (and (match_code "const_int")
+	   (match_test "IN_RANGE (INTVAL (op), 1, 128)")))

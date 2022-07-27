@@ -18249,6 +18249,48 @@
 	* gimple.cc (gimple_build_builtin_unreachable): For BUILT_IN_TRAP,
 	use internal fn rather than builtin.
 
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* gcc/config/riscv/t-elf-multilib:
+	* gcc/config/riscv/t-rtems:
+	* gcc/config/riscv/t-withmultilib: add rv128 options to multilib,
+	  including rv128i, rv128im, rv128ima, rv128imac, rv128imadc, and rv128imafdc,
+	  with LLP128/LLP128F/LLP128D ABIs
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* gcc/config/riscv/riscv.cc: set TI mode for rv128 in riscv_subword,
+          add .octa GAS directive for 16-bytes aligned integer emission,
+          add cases for lq and sq instruction in riscv_output_move,
+          extend riscv_emit_float_compare and riscv_split_64bit_move_p for rv128,
+          add sqsp case in riscv_first_stack_step
+        * gcc/config/riscv/riscv.md: add support for rv128 target specific instructions emission,
+	  including additions, substractions, negations, multiplications, divisions, shifts, 
+	  moves, floating point operations, conversions
+	* gcc/config/riscv/predicates.md: adapt for rv128 and add const127_operand predicate
+	* gcc/config/riscv/bitmanip.md: extend bit manipulations for rv128
+	* gcc/config/riscv/riscv.h: extend stack push and pop for rv128 16-bytes words
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* gcc/config/riscv/riscv-c.cc: add cases for rv128 ABIs
+	* gcc/config/riscv/riscv-d.cc: add cases for rv128 ABIs
+	* gcc/config/riscv/riscv-modes.def: add 32-bytes OI data type
+	* gcc/config/riscv/riscv.h: add rv128 data C data types and LLP128* ABIs
+	* gcc/config/riscv/riscv.md: prepare data types for rv128 backend
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* target-def.h: add emission of 16-bytes unaligned integer 
+	* config/gcn/gcn.cc: add emission of 16-bytes aligned integer
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* gcc/config/riscv/riscv.opt: add MASK_128BIT flag and rv128 ABIs (LLP128/LLP128F/LLP128D)
+	* common/config/riscv/riscv-common.cc: add rv128 recognition and MASK_128BIT flag setup
+	* gcc/config/riscv/riscv-opts.h: add rv128 ABIs in riscv_abi_type enum definition
+	* gcc/config/riscv/arch-canonicalize: add rv128 extensions parsing
+
 2022-07-27  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* doc/loop.texi: Refer to LOOPS_HAVE_RECORDED_EXITS instead.

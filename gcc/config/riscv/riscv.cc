@@ -1657,7 +1657,7 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
     }
 
 
-  if (!TARGET_64BIT
+  if (!(TARGET_64BIT || TARGET_128BIT)
       && (value > INT32_MAX || value < INT32_MIN))
     {
       unsigned HOST_WIDE_INT loval = sext_hwi (value, 32);
@@ -3380,7 +3380,7 @@ riscv_legitimize_tls_address (rtx loc)
     }
   return dest;
 }
-
+
 /* If X is not a valid address for mode MODE, force it into a register.  */
 
 static rtx
@@ -4244,8 +4244,10 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 			    gen_lowpart (HImode, src), true);
       if (word_mode == SImode)
 	emit_insn (gen_iorsi3 (temp, mask, temp));
-      else
+      else if (word_mode == DImode)
 	emit_insn (gen_iordi3 (temp, mask, temp));
+      else
+	emit_insn (gen_iorti3 (temp, mask, temp));
 
       riscv_emit_move (dest, gen_rtx_UNSPEC (mode, gen_rtvec (1, temp),
 					     UNSPEC_FMV_FP16_X));
@@ -5230,7 +5232,7 @@ riscv_subword (rtx op, bool high_p)
   machine_mode mode = GET_MODE (op);
 
   if (mode == VOIDmode)
-    mode = TARGET_64BIT ? TImode : DImode;
+    mode = TARGET_128BIT ? OImode : (TARGET_128BIT ? TImode : DImode);
 
   if (MEM_P (op))
     return adjust_address (op, word_mode, byte);
@@ -5246,7 +5248,7 @@ riscv_subword (rtx op, bool high_p)
 bool
 riscv_split_64bit_move_p (rtx dest, rtx src)
 {
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_128BIT)
     return false;
 
   /* Zilsd provides load/store with even-odd register pair. */
@@ -5415,7 +5417,7 @@ riscv_split_sum_of_two_s12 (HOST_WIDE_INT val, HOST_WIDE_INT *base,
     }
 }
 
-
+
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
 
@@ -5463,6 +5465,7 @@ riscv_output_move (rtx dest, rtx src)
 	  case 2: return "lhu\t%0,%1";
 	  case 4: return "lw\t%0,%1";
 	  case 8: return "ld\t%0,%1";
+	  case 16: return "lq\t%0,%1";
 	  }
 
       if (src_code == CONST_INT)
@@ -5510,7 +5513,7 @@ riscv_output_move (rtx dest, rtx src)
 	      case 4:
 		return "fmv.s.x\t%0,%z1";
 	      case 8:
-		if (TARGET_64BIT)
+		if (TARGET_64BIT || TARGET_128BIT)
 		  return "fmv.d.x\t%0,%z1";
 		/* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */
 		gcc_assert (src == CONST0_RTX (mode));
@@ -5524,6 +5527,7 @@ riscv_output_move (rtx dest, rtx src)
 	  case 2: return "sh\t%z1,%0";
 	  case 4: return "sw\t%z1,%0";
 	  case 8: return "sd\t%z1,%0";
+	  case 16: return "sq\t%z1,%0";
 	  }
     }
   if (src_code == REG && FP_REG_P (REGNO (src)))
@@ -5594,7 +5598,7 @@ riscv_output_return ()
   return "ret";
 }
 
-
+
 /* Return true if CMP1 is a suitable second operand for integer ordering
    test CODE.  See also the *sCC patterns in riscv.md.  */
 
@@ -5890,10 +5894,14 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1,
       *op0 = gen_reg_rtx (word_mode);					\
       if (GET_MODE (cmp_op0) == SFmode && TARGET_64BIT)			\
 	emit_insn (gen_f##CMP##_quietsfdi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == SFmode && TARGET_128BIT)           \
+	emit_insn (gen_f##CMP##_quietsfti4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == SFmode)				\
 	emit_insn (gen_f##CMP##_quietsfsi4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == DFmode && TARGET_64BIT)		\
 	emit_insn (gen_f##CMP##_quietdfdi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == DFmode && TARGET_128BIT)           \
+	emit_insn (gen_f##CMP##_quietdfti4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == DFmode)				\
 	emit_insn (gen_f##CMP##_quietdfsi4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == HFmode && TARGET_64BIT)		\
@@ -9783,7 +9791,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
       /* If we need two subtracts, and one is small enough to allow compressed
 	 loads and stores, then put that one first.  */
       if (IN_RANGE (min_second_step, 0,
-		    (TARGET_64BIT ? SDSP_REACH : SWSP_REACH)))
+		    (TARGET_128BIT ? SQSP_REACH : (TARGET_64BIT ? SDSP_REACH : SWSP_REACH))))
        return MAX (min_second_step, min_first_step);
 
       /* If we need LUI + ADDI + ADD for the second adjustment step, then start
@@ -13108,7 +13116,7 @@ riscv_asan_shadow_offset (void)
 static bool
 riscv_asan_dynamic_shadow_offset_p (void)
 {
-  return TARGET_64BIT;
+  return (TARGET_64BIT || TARGET_128BIT);
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -14724,17 +14732,17 @@ riscv_bitint_type_info (int n, struct bitint_info *info)
     info->limb_mode = SImode;
   else if (n <= 64)
     info->limb_mode = DImode;
-  else if (n <= 128 && TARGET_64BIT)
+  else if (n <= 128 && (TARGET_64BIT || TARGET_128BIT))
     info->limb_mode = TImode;
   else
-    info->limb_mode = TARGET_64BIT ? DImode : SImode;
+    info->limb_mode = TARGET_128BIT ? TImode : (TARGET_64BIT ? DImode : SImode);
 
   info->abi_limb_mode = info->limb_mode;
 
   if (n > 64 && TARGET_64BIT)
     info->abi_limb_mode = TImode;
 
-  if (n > 32 && !TARGET_64BIT)
+  if (n > 32 && !(TARGET_64BIT || TARGET_128BIT))
     info->abi_limb_mode = DImode;
 
   info->big_endian = TARGET_BIG_ENDIAN;
@@ -16540,6 +16548,8 @@ riscv_memtag_tag_bitsize ()
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
+#undef TARGET_ASM_ALIGNED_TI_OP
+#define TARGET_ASM_ALIGNED_TI_OP "\t.octa\t"
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override

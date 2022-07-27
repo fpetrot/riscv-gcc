@@ -123,6 +123,12 @@
   (and (match_code "const_int")
        (match_test "(ival & 63) == 63")))
 
+(define_constraint "DsT"
+  "@internal
+   127 immediate"
+  (and (match_code "const_int")
+       (match_test "(ival & 127) == 127")))
+
 (define_constraint "DbS"
   "@internal"
   (and (match_code "const_int")

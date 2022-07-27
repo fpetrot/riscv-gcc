@@ -22,33 +22,37 @@
 ;; Mode Iterators
 ;; -------------------------------------------------------------------
 
-;; This mode iterator allows 32-bit and 64-bit GPR patterns to be generated
+;; This mode iterator allows 32-bit, 64-bit and 128-bit GPR patterns to be generated
 ;; from the same template.
-(define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
+(define_mode_iterator GPR [SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; A copy of GPR that can be used when a pattern has two independent
 ;; modes.
-(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT")])
+(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
-;; pointer-sized quantities.  Exactly one of the two alternatives will match.
-(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+;; pointer-sized quantities.  Exactly one of the three alternatives will match.
+(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode") (TI "Pmode == TImode")])
 
 ;; Likewise, but for XLEN-sized quantities.
-(define_mode_iterator X [(SI "!TARGET_64BIT") (DI "TARGET_64BIT")])
+(define_mode_iterator X [(SI "!(TARGET_64BIT || TARGET_128BIT)") (DI "TARGET_64BIT") (TI "TARGET_128BIT")])
+(define_mode_iterator XIF [(SI "!(TARGET_64BIT || TARGET_128BIT)") (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; Likewise, but for XLEN/2 -sized quantities.
-(define_mode_iterator HX [(HI "!TARGET_64BIT") (SI "TARGET_64BIT")])
+(define_mode_iterator HX [(HI "!(TARGET_64BIT || TARGET_128BIT)") (SI "TARGET_64BIT") (DI "TARGET_128BIT")])
 
-;; Branches operate on XLEN-sized quantities, but for RV64 we accept
+;; Branches operate on XLEN-sized quantities, but for RV64 and RV128 we accept
 ;; QImode values so we can force zero-extension.
-(define_mode_iterator BR [(QI "TARGET_64BIT") SI (DI "TARGET_64BIT")])
+(define_mode_iterator BR [(QI "TARGET_64BIT || TARGET_128BIT") SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; 32-bit moves for which we provide move patterns.
 (define_mode_iterator MOVE32 [SI])
 
 ;; 64-bit modes for which we provide move patterns.
 (define_mode_iterator MOVE64 [DI DF])
+
+;; 128-bit modes for which we provide move patterns.
+(define_mode_iterator MOVE128 [(TI "TARGET_128BIT")])
 
 ;; Iterator for sub-32-bit integer modes.
 (define_mode_iterator SHORT [QI HI])
@@ -57,51 +61,51 @@
 (define_mode_iterator HISI [HI SI])
 
 ;; Iterator for QImode extension patterns.
-(define_mode_iterator SUPERQI [HI SI (DI "TARGET_64BIT")])
+(define_mode_iterator SUPERQI [HI SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; Iterator for hardware integer modes narrower than XLEN.
-(define_mode_iterator SUBX [QI HI (SI "TARGET_64BIT")])
+(define_mode_iterator SUBX [QI HI (SI "TARGET_64BIT || TARGET_128BIT") (DI "TARGET_128BIT")])
 
 ;; Iterator for hardware integer modes narrower than XLEN, same as SUBX.
-(define_mode_iterator SUBX1 [QI HI (SI "TARGET_64BIT")])
+(define_mode_iterator SUBX1 [QI HI (SI "TARGET_64BIT || TARGET_128BIT") (DI "TARGET_128BIT")])
 
 ;; Iterator for hardware-supported integer modes.
-(define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
+(define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; Iterator for hardware integer modes narrower than XLEN, same as ANYI.
-(define_mode_iterator ANYI1 [QI HI SI (DI "TARGET_64BIT")])
+(define_mode_iterator ANYI1 [QI HI SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 ;; Iterator for integer modes less than or equal to 32bit.
 (define_mode_iterator ANYLE32 [QI HI SI])
 
-(define_mode_iterator ANYI_DOUBLE_TRUNC [HI SI (DI "TARGET_64BIT")])
+(define_mode_iterator ANYI_DOUBLE_TRUNC [HI SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
-(define_mode_iterator ANYI_QUAD_TRUNC [SI (DI "TARGET_64BIT")])
+(define_mode_iterator ANYI_QUAD_TRUNC [SI (DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
-(define_mode_iterator ANYI_OCT_TRUNC [(DI "TARGET_64BIT")])
+(define_mode_iterator ANYI_OCT_TRUNC [(DI "TARGET_64BIT || TARGET_128BIT") (TI "TARGET_128BIT")])
 
 (define_mode_attr ANYI_DOUBLE_TRUNCATED [
-  (HI "QI") (SI "HI") (DI "SI")
+  (HI "QI") (SI "HI") (DI "SI") (TI "DI")
 ])
 
 (define_mode_attr ANYI_QUAD_TRUNCATED [
-  (SI "QI") (DI "HI")
+  (SI "QI") (DI "HI") (TI "SI")
 ])
 
 (define_mode_attr ANYI_OCT_TRUNCATED [
-  (DI "QI")
+  (DI "QI") (TI "HI")
 ])
 
 (define_mode_attr anyi_double_truncated [
-  (HI "qi") (SI "hi") (DI "si")
+  (HI "qi") (SI "hi") (DI "si") (TI "di")
 ])
 
 (define_mode_attr anyi_quad_truncated [
-  (SI "qi") (DI "hi")
+  (SI "qi") (DI "hi") (TI "si")
 ])
 
 (define_mode_attr anyi_oct_truncated [
-  (DI "qi")
+  (DI "qi") (TI "hi")
 ])
 
 ;; Iterator for hardware-supported floating-point modes.
@@ -115,7 +119,7 @@
 			      (HF "TARGET_ZFHMIN || TARGET_ZHINXMIN")])
 
 ;; Iterator for floating-point modes that can be loaded into X registers.
-(define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
+(define_mode_iterator SOFTF [SF (DF "TARGET_64BIT || TARGET_128BIT") (HF "TARGET_ZFHMIN")])
 
 ;; Iterator for floating-point modes of BF16.
 (define_mode_iterator HFBF [HF BF])
@@ -133,33 +137,33 @@
 (define_mode_attr size [(QI "b") (HI "h")])
 
 ;; Mode attributes for loads.
-(define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (HF "flh") (SF "flw") (DF "fld")])
+(define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (TI "lq") (HF "flh") (SF "flw") (DF "fld")])
 
 ;; Instruction names for integer loads that aren't explicitly sign or zero
 ;; extended.  See riscv_output_move and LOAD_EXTEND_OP.
-(define_mode_attr default_load [(QI "lbu") (HI "lhu") (SI "lw") (DI "ld")])
+(define_mode_attr default_load [(QI "lbu") (HI "lhu") (SI "lw") (DI "ld") (TI "lq")])
 
 ;; Mode attribute for FP loads into integer registers.
 (define_mode_attr softload [(HF "lh") (SF "lw") (DF "ld")])
 
 ;; Instruction names for stores.
-(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd") (HF "fsh") (SF "fsw") (DF "fsd")])
+(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd") (TI "sq") (HF "fsh") (SF "fsw") (DF "fsd")])
 
 ;; Instruction names for FP stores from integer registers.
 (define_mode_attr softstore [(HF "sh") (SF "sw") (DF "sd")])
 
 ;; This attribute gives the best constraint to use for registers of
 ;; a given mode.
-(define_mode_attr reg [(SI "d") (DI "d") (CC "d")])
+(define_mode_attr reg [(SI "d") (DI "d") (TI "q") (CC "d")])
 
 ;; This attribute gives the format suffix for floating-point operations.
 (define_mode_attr fmt [(HF "h") (SF "s") (DF "d")])
 
 ;; This attribute gives the integer suffix for floating-point conversions.
-(define_mode_attr ifmt [(SI "w") (DI "l")])
+(define_mode_attr ifmt [(SI "w") (DI "l") (TI "l")])
 
 ;; This attribute gives the format suffix for atomic memory operations.
-(define_mode_attr amo [(SI "w") (DI "d")])
+(define_mode_attr amo [(SI "w") (DI "d") (TI "q")])
 
 ;; This attribute gives the format suffix for byte and halfword atomic memory operations.
 (define_mode_attr amobh [(QI "b") (HI "h")])
@@ -170,35 +174,35 @@
 
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
-(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
+(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TI "DI") (TF "DI")])
 
 ;; Give the number of bits in the mode
-(define_mode_attr sizen [(QI "8") (HI "16") (SI "32") (DI "64")])
+(define_mode_attr sizen [(QI "8") (HI "16") (SI "32") (DI "64") (TI "128")])
 
 ; bitmanip mode attribute
-(define_mode_attr shiftm1 [(SI "const_si_mask_operand") (DI "const_di_mask_operand")])
-(define_mode_attr shiftm1p [(SI "DsS") (DI "DsD")])
+(define_mode_attr shiftm1 [(SI "const_si_mask_operand") (DI "const_di_mask_operand") (TI "const_ti_mask_operand")])
+(define_mode_attr shiftm1p [(SI "DsS") (DI "DsD") (TI "DsT")])
 
 ; mode shift limit attribute
 (define_mode_attr sh_limit [(QI "7") (HI "15")])
 
 ; mode shift bit limit attribute
-(define_mode_attr sh_bit [(SI "5") (DI "6")])
+(define_mode_attr sh_bit [(SI "5") (DI "6") (TI "7")])
 
 ; zcmp mode attribute
-(define_mode_attr slot0_offset  [(SI "-4")  (DI "-8")])
-(define_mode_attr slot1_offset  [(SI "-8")  (DI "-16")])
-(define_mode_attr slot2_offset  [(SI "-12") (DI "-24")])
-(define_mode_attr slot3_offset  [(SI "-16") (DI "-32")])
-(define_mode_attr slot4_offset  [(SI "-20") (DI "-40")])
-(define_mode_attr slot5_offset  [(SI "-24") (DI "-48")])
-(define_mode_attr slot6_offset  [(SI "-28") (DI "-56")])
-(define_mode_attr slot7_offset  [(SI "-32") (DI "-64")])
-(define_mode_attr slot8_offset  [(SI "-36") (DI "-72")])
-(define_mode_attr slot9_offset  [(SI "-40") (DI "-80")])
-(define_mode_attr slot10_offset [(SI "-44") (DI "-88")])
-(define_mode_attr slot11_offset [(SI "-48") (DI "-96")])
-(define_mode_attr slot12_offset [(SI "-52") (DI "-104")])
+(define_mode_attr slot0_offset  [(SI "-4")  (DI "-8")   (TI "-16")])
+(define_mode_attr slot1_offset  [(SI "-8")  (DI "-16")  (TI "-32")])
+(define_mode_attr slot2_offset  [(SI "-12") (DI "-24")  (TI "-48")])
+(define_mode_attr slot3_offset  [(SI "-16") (DI "-32")  (TI "-64")])
+(define_mode_attr slot4_offset  [(SI "-20") (DI "-40")  (TI "-80")])
+(define_mode_attr slot5_offset  [(SI "-24") (DI "-48")  (TI "-96")])
+(define_mode_attr slot6_offset  [(SI "-28") (DI "-56")  (TI "-112")])
+(define_mode_attr slot7_offset  [(SI "-32") (DI "-64")  (TI "-128")])
+(define_mode_attr slot8_offset  [(SI "-36") (DI "-72")  (TI "-144")])
+(define_mode_attr slot9_offset  [(SI "-40") (DI "-80")  (TI "-160")])
+(define_mode_attr slot10_offset [(SI "-44") (DI "-88")  (TI "-176")])
+(define_mode_attr slot11_offset [(SI "-48") (DI "-96")  (TI "-192")])
+(define_mode_attr slot12_offset [(SI "-52") (DI "-104") (TI "-208")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

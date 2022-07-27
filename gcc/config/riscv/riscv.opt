@@ -73,6 +73,15 @@ Enum(abi_type) String(lp64f) Value(ABI_LP64F)
 EnumValue
 Enum(abi_type) String(lp64d) Value(ABI_LP64D)
 
+EnumValue
+Enum(abi_type) String(llp128) Value(ABI_LLP128)
+
+EnumValue
+Enum(abi_type) String(llp128f) Value(ABI_LLP128F)
+
+EnumValue
+Enum(abi_type) String(llp128d) Value(ABI_LLP128D)
+
 mfdiv
 Target Mask(FDIV)
 Use hardware floating-point divide and square root instructions.
@@ -184,6 +193,8 @@ enum riscv_zilsd_align_type riscv_zilsd_align = RISCV_ZILSD_ALIGN_DEFAULT
 
 TargetVariable
 int riscv_zilsd_align_explicit = 0
+
+Mask(128BIT) Var(riscv_isa_flags)
 
 Mask(64BIT) Var(riscv_isa_flags)
 
