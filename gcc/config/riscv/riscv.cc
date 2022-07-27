@@ -2205,7 +2205,7 @@ riscv_subword (rtx op, bool high_p)
   machine_mode mode = GET_MODE (op);
 
   if (mode == VOIDmode)
-    mode = TARGET_64BIT ? TImode : DImode;
+    mode = TARGET_128BIT ? OImode : (TARGET_128BIT ? TImode : DImode);
 
   if (MEM_P (op))
     return adjust_address (op, word_mode, byte);
@@ -2221,7 +2221,7 @@ riscv_subword (rtx op, bool high_p)
 bool
 riscv_split_64bit_move_p (rtx dest, rtx src)
 {
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_128BIT)
     return false;
 
   /* Allow FPR <-> FPR and FPR <-> MEM moves, and permit the special case
@@ -2290,6 +2290,7 @@ riscv_output_move (rtx dest, rtx src)
 	  case 2: return "lhu\t%0,%1";
 	  case 4: return "lw\t%0,%1";
 	  case 8: return "ld\t%0,%1";
+	  case 16: return "lq\t%0,%1";
 	  }
 
       if (src_code == CONST_INT)
@@ -2329,7 +2330,7 @@ riscv_output_move (rtx dest, rtx src)
 	    {
 	      if (!dbl_p)
 		return "fmv.w.x\t%0,%z1";
-	      if (TARGET_64BIT)
+	      if (TARGET_64BIT || TARGET_128BIT)
 		return "fmv.d.x\t%0,%z1";
 	      /* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */
 	      gcc_assert (src == CONST0_RTX (mode));
@@ -2343,6 +2344,7 @@ riscv_output_move (rtx dest, rtx src)
 	  case 2: return "sh\t%z1,%0";
 	  case 4: return "sw\t%z1,%0";
 	  case 8: return "sd\t%z1,%0";
+	  case 16: return "sq\t%z1,%0";
 	  }
     }
   if (src_code == REG && FP_REG_P (REGNO (src)))
@@ -2627,10 +2629,14 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
       *op0 = gen_reg_rtx (word_mode);					\
       if (GET_MODE (cmp_op0) == SFmode && TARGET_64BIT)			\
 	emit_insn (gen_f##CMP##_quietsfdi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == SFmode && TARGET_128BIT)           \
+	emit_insn (gen_f##CMP##_quietsfti4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == SFmode)				\
 	emit_insn (gen_f##CMP##_quietsfsi4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == DFmode && TARGET_64BIT)		\
 	emit_insn (gen_f##CMP##_quietdfdi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == DFmode && TARGET_128BIT)           \
+	emit_insn (gen_f##CMP##_quietdfti4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == DFmode)				\
 	emit_insn (gen_f##CMP##_quietdfsi4 (*op0, cmp_op0, cmp_op1));	\
       else								\
@@ -4279,7 +4285,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame)
       /* If we need two subtracts, and one is small enough to allow compressed
 	 loads and stores, then put that one first.  */
       if (IN_RANGE (min_second_step, 0,
-		    (TARGET_64BIT ? SDSP_REACH : SWSP_REACH)))
+		    (TARGET_128BIT ? SQSP_REACH : (TARGET_64BIT ? SDSP_REACH : SWSP_REACH))))
 	return MAX (min_second_step, min_first_step);
 
       /* If we need LUI + ADDI + ADD for the second adjustment step, then start
@@ -5608,7 +5614,7 @@ riscv_asan_shadow_offset (void)
      This number must match kRiscv*_ShadowOffset* in the file
      libsanitizer/asan/asan_mapping.h which is currently 1<<29 for rv64,
      even though 1<<36 makes more sense.  */
-  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 29) : 0;
+  return (TARGET_64BIT || TARGET_128BIT) ? (HOST_WIDE_INT_1 << 29) : 0;
 }
 
 /* Initialize the GCC target structure.  */
@@ -5618,6 +5624,8 @@ riscv_asan_shadow_offset (void)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
+#undef TARGET_ASM_ALIGNED_TI_OP
+#define TARGET_ASM_ALIGNED_TI_OP "\t.octa\t"
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override

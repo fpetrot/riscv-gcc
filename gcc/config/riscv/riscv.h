@@ -260,14 +260,15 @@ ASM_MISA_SPEC
 /* When in 64-bit mode, move insns will sign extend SImode and CCmode
    moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
-  (TARGET_64BIT && (MODE) == SImode ? SIGN_EXTEND : ZERO_EXTEND)
+  ((TARGET_64BIT && (MODE) == SImode) || \
+  (TARGET_128BIT && (((MODE) == SImode) || ((MODE) == DImode))) \
+  ? SIGN_EXTEND : ZERO_EXTEND)
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.  */
-
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)	\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
@@ -891,10 +892,10 @@ typedef struct {
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)				\
 do									\
   {									\
-    fprintf (STREAM, "\taddi\t%s,%s,-8\n\t%s\t%s,0(%s)\n",		\
+    fprintf (STREAM, "\taddi\t%s,%s,-16\n\t%s\t%s,0(%s)\n",		\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM],				\
-	     TARGET_64BIT ? "sd" : "sw",				\
+	     TARGET_128BIT ? "sq" : (TARGET_64BIT ? "sd" : "sw"),	\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM]);				\
   }									\
@@ -902,9 +903,9 @@ while (0)
 
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO)				\
 do									\
-  {									\
-    fprintf (STREAM, "\t%s\t%s,0(%s)\n\taddi\t%s,%s,8\n",		\
-	     TARGET_64BIT ? "ld" : "lw",				\
+  {				  \
+    fprintf (STREAM, "\t%s\t%s,0(%s)\n\taddi\t%s,%s,16\n",		\
+	     TARGET_128BIT ? "lq" : (TARGET_64BIT ? "ld" : "lw"),	\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM],				\
@@ -999,6 +1000,7 @@ extern unsigned riscv_stack_boundary;
 
 #define SWSP_REACH (4LL << C_SxSP_BITS)
 #define SDSP_REACH (8LL << C_SxSP_BITS)
+#define SQSP_REACH (16LL << C_SxSP_BITS)
 
 /* This is the maximum value that can be represented in a compressed load/store
    offset (an unsigned 5-bit value scaled by 4).  */
