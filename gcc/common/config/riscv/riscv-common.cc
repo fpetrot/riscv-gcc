@@ -968,11 +968,16 @@ riscv_subset_list::parse_base_ext (const char *p)
       m_xlen = 64;
       p += 4;
     }
+  else if (startswith (p, "rv128"))
+    {
+      m_xlen = 128;
+      p += 5;
+    }
   else
     {
       if (m_loc)
 	error_at (*m_loc, "%<-march=%s%>: ISA string must begin with rv32, "
-		  "rv64, a supported RVA profile or refer to a supported CPU",
+		  "rv64, rv128, a supported RVA profile or refer to a supported CPU",
 		  m_arch);
       return NULL;
     }
@@ -1574,9 +1579,20 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
 	}
 
       if (subset_list->xlen () == 32)
+        {
 	opts->x_riscv_isa_flags &= ~MASK_64BIT;
+	opts->x_riscv_isa_flags &= ~MASK_128BIT;
+        }
       else if (subset_list->xlen () == 64)
+        {
 	opts->x_riscv_isa_flags |= MASK_64BIT;
+	opts->x_riscv_isa_flags &= ~MASK_128BIT;
+        }
+      else if (subset_list->xlen () == 128)
+        {
+	opts->x_riscv_isa_flags &= ~MASK_64BIT;
+	opts->x_riscv_isa_flags |= MASK_128BIT;
+        }
 
       for (const auto &pair : riscv_ext_infos)
 	{

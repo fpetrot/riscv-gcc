@@ -74,6 +74,12 @@
 	    (eq_attr "mode" "DI")))
   "imuldiv*7")
 
+(define_insn_reservation "generic_idivti" 130
+  (and (eq_attr "tune" "generic")
+       (and (eq_attr "type" "idiv")
+	    (eq_attr "mode" "TI")))
+  "imuldiv*7")
+
 (define_insn_reservation "generic_fmul_half" 5
   (and (eq_attr "tune" "generic")
        (and (eq_attr "type" "fadd,fmul,fmadd")

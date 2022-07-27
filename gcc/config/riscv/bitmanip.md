@@ -22,12 +22,32 @@
 (define_insn "*zero_extendsidi2_bitmanip"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_64BIT && TARGET_ZBA && !TARGET_XTHEADMEMIDX"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBA && !TARGET_XTHEADMEMIDX"
   "@
    zext.w\t%0,%1
    lwu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "DI")])
+
+(define_insn "*zero_extendsiti2_bitmanip"
+  [(set (match_operand:TI 0 "register_operand" "=r,r")
+	(zero_extend:TI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_128BIT && TARGET_ZBA"
+  "@
+   zext.w\t%0,%1
+   lwu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "*zero_extendditi2_bitmanip"
+  [(set (match_operand:TI 0 "register_operand" "=r,r")
+	(zero_extend:TI (match_operand:DI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_128BIT && TARGET_ZBA"
+  "@
+   zext.d\t%0,%1
+   ldu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "TI")])
 
 (define_insn "*shNadd"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -117,7 +137,7 @@
 			     (match_operand:QI 2 "imm123_operand" "Ds3"))
 		 (match_operand 3 "immediate_operand" "n"))
 	  (match_operand:DI 4 "register_operand" "r")))]
-  "TARGET_64BIT && TARGET_ZBA
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBA
    && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
   "sh%2add.uw\t%0,%1,%4"
   [(set_attr "type" "bitmanip")
@@ -224,7 +244,7 @@
 	(plus:DI (zero_extend:DI
 		   (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:DI 2 "register_operand" "r")))]
-  "TARGET_64BIT && TARGET_ZBA"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBA"
   "add.uw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
@@ -234,7 +254,7 @@
 	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
 			   (match_operand:QI 2 "immediate_operand" "I"))
 		(match_operand 3 "immediate_operand" "n")))]
-  "TARGET_64BIT && TARGET_ZBA
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBA
    && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
   "slli.uw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
@@ -338,7 +358,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI
           (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
   [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
@@ -357,7 +377,7 @@
 (define_insn "*<bitmanip_optab>di2"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (clz_ctz_pcnt:DI (match_operand:DI 1 "register_operand" "r")))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBB"
   "<bitmanip_insn>\t%0,%1"
   [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "DI")])
@@ -425,7 +445,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:QI 2 "arith_operand" "rI")))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -433,7 +453,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
                                  (match_operand:QI 2 "arith_operand" "rI"))))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -467,7 +487,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotate:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
   "rol\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -475,7 +495,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotate:SI (match_operand:SI 1 "register_operand" "r")
 				   (match_operand:QI 2 "register_operand" "r"))))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 

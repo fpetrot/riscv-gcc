@@ -84,8 +84,10 @@ extern const char *riscv_arch_help (int argc, const char **argv);
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
+#undef TARGET_128BIT
 /* Make this compile time constant for libgcc2 */
 #define TARGET_64BIT           (__riscv_xlen == 64)
+#define TARGET_128BIT          (__riscv_xlen == 128)
 #endif /* IN_LIBGCC2 */
 
 #ifdef HAVE_AS_MISA_SPEC
@@ -164,10 +166,10 @@ ARCH_UNSET_CLEANUP_SPECS \
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
-#define MAX_BITS_PER_WORD 64
+#define MAX_BITS_PER_WORD 128
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define UNITS_PER_WORD (TARGET_128BIT ? 16 : (TARGET_64BIT ? 8 : 4))
 #define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
@@ -186,16 +188,18 @@ ARCH_UNSET_CLEANUP_SPECS \
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
   ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
-    || riscv_abi == ABI_LP64 || riscv_abi == ABI_LP64E)			\
+    || riscv_abi == ABI_LP64 || riscv_abi == ABI_LP64E		\
+    || riscv_abi == ABI_LLP128)			\
    ? 0 									\
-   : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F) ? 4 : 8))
+   : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F ||             \
+   riscv_abi == ABI_LLP128F) ? 4 : 8))
 
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
-#define LONG_LONG_TYPE_SIZE 64
-#define POINTER_SIZE (riscv_abi >= ABI_LP64 ? 64 : 32)
-#define LONG_TYPE_SIZE POINTER_SIZE
+#define LONG_LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 128 : 64)
+#define POINTER_SIZE (riscv_abi >= ABI_LLP128 ? 128 : (riscv_abi >= ABI_LP64 ? 64 : 32))
+#define LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 64 : POINTER_SIZE)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY BITS_PER_WORD
@@ -247,7 +251,7 @@ ARCH_UNSET_CLEANUP_SPECS \
 
 /* An integer expression for the size in bits of the largest integer machine
    mode that should actually be used.  We allow pairs of registers.  */
-#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_128BIT ? OImode : (TARGET_64BIT ? TImode : DImode))
 
 /* DATA_ALIGNMENT and LOCAL_ALIGNMENT common definition.  */
 #define RISCV_EXPAND_ALIGNMENT(COND, TYPE, ALIGN)			\
@@ -286,14 +290,15 @@ ARCH_UNSET_CLEANUP_SPECS \
 /* When in 64-bit mode, move insns will sign extend SImode and CCmode
    moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
-  (TARGET_64BIT && (MODE) == SImode ? SIGN_EXTEND : ZERO_EXTEND)
+  ((TARGET_64BIT && (MODE) == SImode) || \
+  (TARGET_128BIT && (((MODE) == SImode) || ((MODE) == DImode))) \
+  ? SIGN_EXTEND : ZERO_EXTEND)
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.  */
-
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)	\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
@@ -1132,10 +1137,10 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)				\
 do									\
   {									\
-    fprintf (STREAM, "\taddi\t%s,%s,-8\n\t%s\t%s,0(%s)\n",		\
+    fprintf (STREAM, "\taddi\t%s,%s,-16\n\t%s\t%s,0(%s)\n",		\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM],				\
-	     TARGET_64BIT ? "sd" : "sw",				\
+	     TARGET_128BIT ? "sq" : (TARGET_64BIT ? "sd" : "sw"),	\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM]);				\
   }									\
@@ -1143,9 +1148,9 @@ while (0)
 
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO)				\
 do									\
-  {									\
-    fprintf (STREAM, "\t%s\t%s,0(%s)\n\taddi\t%s,%s,8\n",		\
-	     TARGET_64BIT ? "ld" : "lw",				\
+  {				  \
+    fprintf (STREAM, "\t%s\t%s,0(%s)\n\taddi\t%s,%s,16\n",		\
+	     TARGET_128BIT ? "lq" : (TARGET_64BIT ? "ld" : "lw"),	\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM],				\
@@ -1175,10 +1180,12 @@ while (0)
   riscv_asm_output_external (STR, DECL, NAME)
 
 #undef SIZE_TYPE
-#define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
+#define SIZE_TYPE (POINTER_SIZE == 128 ? "long long unsigned int" : \
+		(POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int"))
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
+#define PTRDIFF_TYPE (POINTER_SIZE == 128 ? "long long int" : \
+		(POINTER_SIZE == 64 ? "long int" : "int"))
 
 /* The maximum number of bytes copied by one iteration of a cpymemsi loop.  */
 
@@ -1238,6 +1245,7 @@ extern bool need_shadow_stack_push_pop_p ();
 #define XLEN_SPEC \
   "%{march=rv32*:32}" \
   "%{march=rv64*:64}" \
+  "%{march=rv128*:128}" \
 
 #define ABI_SPEC \
   "%{mabi=ilp32:ilp32}" \
@@ -1248,6 +1256,9 @@ extern bool need_shadow_stack_push_pop_p ();
   "%{mabi=lp64e:lp64e}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
+  "%{mabi=llp128:llp128}" \
+  "%{mabi=llp128f:llp128f}" \
+  "%{mabi=llp128d:llp128d}" \
 
 /* ISA constants needed for code generation.  */
 #define OPCODE_LW    0x2003
@@ -1269,6 +1280,7 @@ extern bool need_shadow_stack_push_pop_p ();
 
 #define SWSP_REACH (4LL << C_SxSP_BITS)
 #define SDSP_REACH (8LL << C_SxSP_BITS)
+#define SQSP_REACH (16LL << C_SxSP_BITS)
 
 /* This is the maximum value that can be represented in a compressed load/store
    offset (an unsigned 5-bit value scaled by 4).  */
