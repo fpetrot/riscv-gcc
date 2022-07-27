@@ -1,5 +1,13 @@
 2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
 
+	* gcc/config/riscv/t-elf-multilib:
+	* gcc/config/riscv/t-rtems:
+	* gcc/config/riscv/t-withmultilib: add rv128 options to multilib,
+	  including rv128i, rv128im, rv128ima, rv128imac, rv128imadc, and rv128imafdc,
+	  with LLP128/LLP128F/LLP128D ABIs
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
 	* gcc/config/riscv/riscv.cc: set TI mode for rv128 in riscv_subword,
           add .octa GAS directive for 16-bytes aligned integer emission,
           add cases for lq and sq instruction in riscv_output_move,

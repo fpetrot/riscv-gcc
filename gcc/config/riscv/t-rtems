@@ -1,11 +1,14 @@
 MULTILIB_OPTIONS	=
 MULTILIB_DIRNAMES	=
 
-MULTILIB_OPTIONS	+= march=rv32i/march=rv32im/march=rv32imafd/march=rv32iac/march=rv32imac/march=rv32imafc/march=rv64imafd/march=rv64imac/march=rv64imafdc
-MULTILIB_DIRNAMES	+= rv32i       rv32im       rv32imafd       rv32iac       rv32imac       rv32imafc       rv64imafd       rv64imac       rv64imafdc
+MULTILIB_OPTIONS	+= march=rv32i/march=rv32im/march=rv32imafd/march=rv32iac/march=rv32imac/march=rv32imafc/march=rv64imafd/march=rv64imac/march=rv64imafdc/march=rv128i/march=rv128im/march=rv128ima/march=rv128imac/march=rv128imafc/march=rv128imafdc
 
-MULTILIB_OPTIONS	+= mabi=ilp32/mabi=ilp32f/mabi=ilp32d/mabi=lp64/mabi=lp64d
-MULTILIB_DIRNAMES	+= ilp32      ilp32f      ilp32d      lp64      lp64d
+MULTILIB_DIRNAMES	+= rv32i       rv32im       rv32imafd       rv32iac       rv32imac       rv32imafc       rv64imafd       rv64imac       rv64imafdc       rv128i       rv128im       rv128ima       rv128imac       rv128imafc       rv128imafdc
+
+MULTILIB_OPTIONS	+= mabi=ilp32/mabi=ilp32f/mabi=ilp32d/mabi=lp64/mabi=lp64d/mabi=llp128/mabi=llp128f/mabi=llp128d
+
+MULTILIB_DIRNAMES	+= ilp32      ilp32f      ilp32d      lp64      lp64d      llp128      llp128f      llp128d
+
 
 MULTILIB_OPTIONS	+= mcmodel=medany
 MULTILIB_DIRNAMES	+= medany
@@ -23,3 +26,15 @@ MULTILIB_REQUIRED	+= march=rv64imac/mabi=lp64
 MULTILIB_REQUIRED	+= march=rv64imac/mabi=lp64/mcmodel=medany
 MULTILIB_REQUIRED	+= march=rv64imafdc/mabi=lp64d
 MULTILIB_REQUIRED	+= march=rv64imafdc/mabi=lp64d/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128i/mabi=llp128
+MULTILIB_REQUIRED	+= march=rv128i/mabi=llp128/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128im/mabi=llp128
+MULTILIB_REQUIRED	+= march=rv128im/mabi=llp128/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128ima/mabi=llp128
+MULTILIB_REQUIRED	+= march=rv128ima/mabi=llp128/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128imac/mabi=llp128
+MULTILIB_REQUIRED	+= march=rv128imac/mabi=llp128/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128imafc/mabi=llp128f
+MULTILIB_REQUIRED	+= march=rv128imafc/mabi=llp128f/mcmodel=medany
+MULTILIB_REQUIRED	+= march=rv128imafdc/mabi=llp128d
+MULTILIB_REQUIRED	+= march=rv128imafdc/mabi=llp128d/mcmodel=medany
