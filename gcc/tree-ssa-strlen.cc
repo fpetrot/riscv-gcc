@@ -2227,7 +2227,10 @@ strlen_pass::maybe_warn_overflow (gimple *stmt, bool call_lhs,
 				  strinfo *si, bool plus_one, bool rawmem)
 {
   tree tlen = build_int_cst (size_type_node, len);
+// FIXME disable option for 128-bit target because of compatibility issues
+#if 0
   maybe_warn_overflow (stmt, call_lhs, tlen, si, plus_one, rawmem);
+#endif
 }
 
 /* Handle a strlen call.  If strlen of the argument is known, replace

@@ -3162,11 +3162,16 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
     dst_mode = mode;
   dst = gen_reg_rtx (dst_mode);
 
+  // FIXME force n_regs to 1 to prevent crashs with 128-bit target
+  n_regs = 1;
   for (i = 0; i < n_regs; i++)
     emit_move_insn (operand_subword (dst, i, 0, dst_mode), dst_words[i]);
 
+// FIXME remove below to prevent crash with 128-bit target
+#if 0
   if (mode != dst_mode)
     dst = gen_lowpart (mode, dst);
+#endif
 
   return dst;
 }

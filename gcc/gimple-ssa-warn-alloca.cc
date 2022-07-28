@@ -83,6 +83,10 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   // Warning is disabled when its size limit is greater than PTRDIFF_MAX
   // for the target maximum, which makes the limit negative since when
   // represented in signed HOST_WIDE_INT.
+
+  // FIXME force to false to prevent crashs with 128-bit target
+  return false;
+
   unsigned HOST_WIDE_INT max = tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node));
   return (adjusted_warn_limit (false) <= max
 	  || adjusted_warn_limit (true) <= max);

@@ -1,3 +1,17 @@
+2022-07-28  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	temporary workarounds to fix crashs with 128-bit targets:
+	* gcc/expr.cc: force n_regs to 1 and disable case in copy_blkmode_to_reg
+	* gcc/gimple-ssa-warn-access.cc: disable allow overlow check in 
+	  pass_waccess::check_alloc_size_call
+	* gcc/gimple-ssa-warn-alloca.cc: force false return in pass_walloca::gate
+	* gcc/hwint.h: comment check of prec value in sext_hwi
+	* gcc/pointer-query.cc: comment check of offset ranges in access_ref::size_remaining 
+	* gcc/stor-layout.cc: disable -Wlarger-than option check
+	* gcc/tree-ssa-strlen.cc: disable overflow check in strlen_pass::maybe_warn_overflow
+	* gcc/tree.cc: disable constant fit to host word check in tree_fits_poly_uint64_p
+	  and tree_to_shwi
+
 2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
 
 	* gcc/dwarf2out.cc: add cases for 128-bit target handling (RISC-V rv128)

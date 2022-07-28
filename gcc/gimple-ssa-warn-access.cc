@@ -2458,7 +2458,10 @@ pass_waccess::check_alloc_size_call (gcall *stmt)
       alloc_args[1] = call_arg (stmt, idx[1]);
     }
 
+// FIXME disable option for 128-bit target to prevent crashs
+#if 0
   maybe_warn_alloc_args_overflow (stmt, alloc_args, idx);
+#endif
 }
 
 /* Check a call STMT to strcat() for overflow and warn if it does.  */

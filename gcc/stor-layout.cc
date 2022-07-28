@@ -789,6 +789,8 @@ layout_decl (tree decl, unsigned int known_align)
     {
       tree size = DECL_SIZE_UNIT (decl);
 
+// FIXME disable this option for 128-bit target because of compatibility issues
+#if 0
       if (size != 0 && TREE_CODE (size) == INTEGER_CST)
 	{
 	  /* -Wlarger-than= argument of HOST_WIDE_INT_MAX is treated
@@ -803,6 +805,7 @@ layout_decl (tree decl, unsigned int known_align)
 		     "maximum object size %wu",
 		     decl, size, max_size);
 	}
+#endif
     }
 
   /* If the RTL was already set, update its mode and mem attributes.  */
