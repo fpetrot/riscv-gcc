@@ -37,9 +37,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __multi3 __muldi3
 #endif
 
+#if __riscv_xlen == 128
+extern DWtype __multi3_rv128 (DWtype u, DWtype v);
+#endif
+
 DWtype
 __multi3 (DWtype u, DWtype v)
 {
+#if __riscv_xlen == 128
+  return __multi3_rv128(u, v);
+#else
   const DWunion uu = {.ll = u};
   const DWunion vv = {.ll = v};
   DWunion w;
@@ -83,4 +90,5 @@ __multi3 (DWtype u, DWtype v)
     w.s.high += __muluw3(uu.s.low, vv.s.high);
 
   return w.ll;
+#endif
 }

@@ -34,6 +34,73 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __umoddi3 __umodsi3
 # define __divdi3 __divsi3
 # define __moddi3 __modsi3
+#elif __riscv_xlen == 128
+FUNC_BEGIN (__udivsi3)
+  /* Compute __udivti3(a0 << 96, a1 << 96); cast result to uint32_t.  */
+  sll    a0, a0, 96
+  sll    a1, a1, 96
+  move   t0, ra
+  jal    HIDDEN_JUMPTARGET(__udivti3)
+  sext.w a0, a0
+  jr     t0
+FUNC_END (__udivsi3)
+
+FUNC_BEGIN (__umodsi3)
+  /* Compute __udivti3((uint32_t)a0, (uint32_t)a1); cast a1 to uint32_t.  */
+  sll    a0, a0, 96
+  sll    a1, a1, 96
+  srl    a0, a0, 96
+  srl    a1, a1, 96
+  move   t0, ra
+  jal    HIDDEN_JUMPTARGET(__udivti3)
+  sext.w a0, a1
+  jr     t0
+FUNC_END (__umodsi3)
+
+FUNC_ALIAS (__modsi3, __moddi3)
+
+FUNC_BEGIN (__udivdi3)
+  /* Compute __udivti3(a0 << 64, a1 << 64); cast result to uint64_t.  */
+  sll    a0, a0, 64
+  sll    a1, a1, 64
+  move   t0, ra
+  jal    HIDDEN_JUMPTARGET(__udivti3)
+  sext.w a0, a0
+  jr     t0
+FUNC_END (__udivdi3)
+
+FUNC_BEGIN (__umoddi3)
+  /* Compute __udivti3((uint64_t)a0, (uint64_t)a1); cast a1 to uint64_t.  */
+  sll    a0, a0, 64
+  sll    a1, a1, 64
+  srl    a0, a0, 64
+  srl    a1, a1, 64
+  move   t0, ra
+  jal    HIDDEN_JUMPTARGET(__udivti3)
+  sext.w a0, a1
+  jr     t0
+FUNC_END (__umoddi3)
+
+FUNC_ALIAS (__moddi3, __modti3)
+
+FUNC_BEGIN( __divdi3)
+  /* Check for special case of INT_MIN/-1. Otherwise, fall into __divti3.  */
+  li    t0, -1
+  beq   a1, t0, .L21
+  move  t0, ra
+  jal HIDDEN_JUMPTARGET(__divti3)
+  jr    t0
+.L21:
+  sll   t0, t0, 63
+  bne   a0, t0, __divti3
+  ret
+FUNC_END ( __divdi3)
+
+FUNC_BEGIN( __divsi3)
+  /* Check for special case of INT_MIN/-1. Otherwise, fall into __divti3.  */
+  li    t0, -1
+  beq   a1, t0, .L20
+
 #else
 FUNC_BEGIN (__udivsi3)
   /* Compute __udivdi3(a0 << 32, a1 << 32); cast result to uint32_t.  */
@@ -64,6 +131,93 @@ FUNC_BEGIN( __divsi3)
   li    t0, -1
   beq   a1, t0, .L20
 #endif
+
+#if __riscv_xlen == 128
+FUNC_BEGIN (__divti3)
+  bltz  a0, .L10
+  bltz  a1, .L11
+  /* Since the quotient is positive, fall into __udivti3.  */
+
+FUNC_BEGIN (__udivti3)
+  mv    a2, a1
+  mv    a1, a0
+  li    a0, -1
+  beqz  a2, .L5
+  li    a3, 1
+  bgeu  a2, a1, .L2
+.L1:
+  blez  a2, .L2
+  slli  a2, a2, 1
+  slli  a3, a3, 1
+  bgtu  a1, a2, .L1
+.L2:
+  li    a0, 0
+.L3:
+  bltu  a1, a2, .L4
+  sub   a1, a1, a2
+  or    a0, a0, a3
+.L4:
+  srli  a3, a3, 1
+  srli  a2, a2, 1
+  bnez  a3, .L3
+.L5:
+  ret
+FUNC_END (__udivti3)
+HIDDEN_DEF (__udivti3)
+
+FUNC_BEGIN (__umodti3)
+  /* Call __udivti3(a0, a1), then return the remainder, which is in a1.  */
+  move  t0, ra
+  jal   HIDDEN_JUMPTARGET(__udivti3)
+  move  a0, a1
+  jr    t0
+FUNC_END (__umodti3)
+
+  /* Handle negative arguments to __divti3.  */
+.L10:
+  neg   a0, a0
+  /* Zero is handled as a negative so that the result will not be inverted.  */
+  bgtz  a1, .L12     /* Compute __udivti3(-a0, a1), then negate the result.  */
+
+  neg   a1, a1
+  j     HIDDEN_JUMPTARGET(__udivti3)     /* Compute __udivti3(-a0, -a1).  */
+.L11:                /* Compute __udivti3(a0, -a1), then negate the result.  */
+  neg   a1, a1
+.L12:
+  move  t0, ra
+  jal   HIDDEN_JUMPTARGET(__udivti3)
+  neg   a0, a0
+  jr    t0
+FUNC_END (__divti3)
+
+FUNC_BEGIN (__modti3)
+  move   t0, ra
+  bltz   a1, .L31
+  bltz   a0, .L32
+.L30:
+  jal    HIDDEN_JUMPTARGET(__udivti3)    /* The dividend is not negative.  */
+  move   a0, a1
+  jr     t0
+.L31:
+  neg    a1, a1
+  bgez   a0, .L30
+.L32:
+  neg    a0, a0
+  jal    HIDDEN_JUMPTARGET(__udivti3)    /* The dividend is hella negative.  */
+  neg    a0, a1
+  jr     t0
+FUNC_END (__modti3)
+
+HIDDEN_DEF (__divti3)
+
+  /* continuation of __divsi3 */
+.L20:
+  sll   t0, t0, 31
+  bne   a0, t0, __divti3
+  ret
+FUNC_END (__divsi3)
+
+#else
 
 FUNC_BEGIN (__divdi3)
   bltz  a0, .L10
@@ -147,4 +301,5 @@ FUNC_END (__moddi3)
   bne   a0, t0, __divdi3
   ret
 FUNC_END (__divsi3)
+#endif
 #endif

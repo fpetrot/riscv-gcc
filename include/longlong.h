@@ -1083,6 +1083,8 @@ extern UDItype __umulsidi3 (USItype, USItype);
   #define MULUW3 "call __mulsi3"
 #elif __riscv_xlen == 64
   #define MULUW3 "call __muldi3"
+#elif __riscv_xlen == 128
+  #define MULUW3 "call __multi3"
 #else
 #error unsupported xlen
 #endif /* __riscv_xlen */
