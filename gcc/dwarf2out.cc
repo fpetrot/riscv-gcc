@@ -296,8 +296,8 @@ static GTY(()) bool do_eh_frame = false;
 static unsigned int rnglist_idx;
 
 /* Data and reference forms for relocatable data.  */
-#define DW_FORM_data (dwarf_offset_size == 8 ? DW_FORM_data8 : DW_FORM_data4)
-#define DW_FORM_ref (dwarf_offset_size == 8 ? DW_FORM_ref8 : DW_FORM_ref4)
+#define DW_FORM_data (dwarf_offset_size == 16 ? DW_FORM_data16 : (dwarf_offset_size == 8 ? DW_FORM_data8 : DW_FORM_data4))
+#define DW_FORM_ref (dwarf_offset_size == 16 ? DW_FORM_ref8 : (dwarf_offset_size == 8 ? DW_FORM_ref8 : DW_FORM_ref4))
 
 #ifndef DEBUG_FRAME_SECTION
 #define DEBUG_FRAME_SECTION	".debug_frame"
@@ -9905,6 +9905,8 @@ value_format (dw_attr_node *a)
 	  return DW_FORM_data4;
 	case 8:
 	  return DW_FORM_data8;
+	case 16:
+	  return DW_FORM_data16;
 	default:
 	  gcc_unreachable ();
 	}
@@ -9939,6 +9941,8 @@ value_format (dw_attr_node *a)
 	  return DW_FORM_data4;
 	case 8:
 	  return DW_FORM_data8;
+	case 16:
+	  return DW_FORM_data16;
 	default:
 	  gcc_unreachable ();
 	}
@@ -9977,6 +9981,10 @@ value_format (dw_attr_node *a)
 	  if (dwarf_version == 3 && a->dw_attr == DW_AT_data_member_location)
 	    return DW_FORM_udata;
 	  return DW_FORM_data8;
+	case 16:
+	  if (dwarf_version == 3 && a->dw_attr == DW_AT_data_member_location)
+	    return DW_FORM_udata;
+	  return DW_FORM_data16;
 	default:
 	  gcc_unreachable ();
 	}
@@ -9994,6 +10002,10 @@ value_format (dw_attr_node *a)
 	case 32:
 	  return DW_FORM_data8;
 	case 64:
+	  if (dwarf_version >= 5)
+	    return DW_FORM_data16;
+	  return DW_FORM_block1;
+	case 128:
 	  if (dwarf_version >= 5)
 	    return DW_FORM_data16;
 	  /* FALLTHRU */
@@ -10103,6 +10115,8 @@ value_format (dw_attr_node *a)
 	  return DW_FORM_data4;
 	case 8:
 	  return DW_FORM_data8;
+	case 16:
+	  return DW_FORM_data16;
 	default:
 	  gcc_unreachable ();
 	}

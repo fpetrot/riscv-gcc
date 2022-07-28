@@ -1,5 +1,9 @@
 2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
 
+	* gcc/dwarf2out.cc: add cases for 128-bit target handling (RISC-V rv128)
+
+2022-07-27  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
 	* gcc/config/riscv/t-elf-multilib:
 	* gcc/config/riscv/t-rtems:
 	* gcc/config/riscv/t-withmultilib: add rv128 options to multilib,
