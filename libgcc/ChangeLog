@@ -1,3 +1,16 @@
+2022-07-28  Sylvain Noiry  <sylvain.noiry@grenoble-inp.org>
+
+	* libgcc2.h: add extern definition for __multi3, __divti3,
+	  __udivti3, __umodti3, modti3
+	* config/riscv/div.S: extend for rv128i target
+	* config/riscv/multi3.S: use __multi3_rv128 for rv128i target
+	* config/riscv/t-elf: add multi3_rv128.S to sources
+	* config/t-elf(32/64): exclude _multi3, _udivdi3, _udivti3,
+	   _divdi3,  _divti3, _modti3, _umodti3, _moddi3, _umoddi3
+	* (new) config/riscv/t-elf128: for elf128 case
+	* (new) config/riscv/multi3_rv128.S: define __multi3_rv128
+	  function for rv128i __multi3
+
 2022-07-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/lib2funcs.c (udivmodsi4): Update AND mask.

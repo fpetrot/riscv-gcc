@@ -373,10 +373,15 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #endif
 
 extern DWtype __muldi3 (DWtype, DWtype);
+extern DWtype __multi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
+extern DWtype __divti3 (DWtype, DWtype);
 extern UDWtype __udivdi3 (UDWtype, UDWtype);
+extern UDWtype __udivti3 (UDWtype, UDWtype);
 extern UDWtype __umoddi3 (UDWtype, UDWtype);
+extern UDWtype __umodti3 (UDWtype, UDWtype);
 extern DWtype __moddi3 (DWtype, DWtype);
+extern DWtype __modti3 (DWtype, DWtype);
 extern DWtype __divmoddi4 (DWtype, DWtype, DWtype *);
 
 /* __udivmoddi4 is static inline when building other libgcc2 portions.  */
