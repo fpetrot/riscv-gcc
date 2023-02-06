@@ -128,7 +128,7 @@
 ;; the split instructions; in some cases, it is more appropriate for the
 ;; scheduling type to be "multi" instead.
 (define_attr "move_type"
-  "unknown,load,fpload,store,fpstore,mtc,mfc,move,fmove,
+  "unknown,load,loadptr,fpload,store,fpstore,mtc,mfc,move,fmove,
    const,logical,arith,andi,shift_shift"
   (const_string "unknown"))
 
@@ -156,6 +156,7 @@
 ;; jump		unconditional jump
 ;; call		unconditional call
 ;; load		load instruction(s)
+;; loadptr		load pointer instruction(s)
 ;; fpload	floating point load
 ;; store	store instruction(s)
 ;; fpstore	floating point store
@@ -183,7 +184,7 @@
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,store,fpstore,
+  "unknown,branch,jump,call,load,loadptr,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate"
   (cond [(eq_attr "got" "load") (const_string "load")
@@ -192,6 +193,7 @@
 	 ;; it is usually better to schedule them in the same way
 	 ;; as the singleword form, rather than as "multi".
 	 (eq_attr "move_type" "load") (const_string "load")
+   (eq_attr "move_type" "loadptr") (const_string "loadptr")
 	 (eq_attr "move_type" "fpload") (const_string "fpload")
 	 (eq_attr "move_type" "store") (const_string "store")
 	 (eq_attr "move_type" "fpstore") (const_string "fpstore")
@@ -253,7 +255,7 @@
 
 	  ;; Otherwise, constants, loads and stores are handled by external
 	  ;; routines.
-	  (eq_attr "move_type" "load,fpload")
+	  (eq_attr "move_type" "load,loadptr,fpload")
 	  (symbol_ref "riscv_load_store_insns (operands[1], insn) * 4")
 	  (eq_attr "move_type" "store,fpstore")
 	  (symbol_ref "riscv_load_store_insns (operands[0], insn) * 4")
@@ -325,6 +327,9 @@
 
 ;; Mode attributes for loads.
 (define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (TI "lq") (SF "flw") (DF "fld")])
+
+;; Mode attributes for load pointer.
+(define_mode_attr loadptr [(SI "lptr") (DI "lptr") (TI "lptr")])
 
 ;; Instruction names for integer loads that aren't explicitly sign or zero
 ;; extended.  See riscv_output_move and LOAD_EXTEND_OP.
@@ -2224,6 +2229,15 @@
     DONE;
 })
 
+(define_insn "lptr_128bit"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=r")
+        (match_operand:TI 1 "address_operand" "p"))]
+  "TARGET_128BIT 
+    && (register_operand (operands[0], TImode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "loadptr")
+   (set_attr "mode" "TI")])
+
 (define_insn "*movti_128bit"
   [(set (match_operand:TI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m")
 	(match_operand:TI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,*f"))]
@@ -2233,6 +2247,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore")
    (set_attr "mode" "TI")])
+
 
 ;; 64-bit integer moves
 
@@ -2244,6 +2259,15 @@
   if (riscv_legitimize_move (DImode, operands[0], operands[1]))
     DONE;
 })
+
+(define_insn "lptr_64bit"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=r")
+        (match_operand:TI 1 "address_operand" "p"))]
+  "TARGET_64BIT 
+    && (register_operand (operands[0], TImode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "loadptr")
+   (set_attr "mode" "DI")])
 
 (define_insn "*movdi_32bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,  *f,*f,*r,*f,*m")
@@ -2275,6 +2299,15 @@
   if (riscv_legitimize_move (<MODE>mode, operands[0], operands[1]))
     DONE;
 })
+
+(define_insn "lptr_32bit"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=r")
+        (match_operand:TI 1 "address_operand" "p"))]
+  "TARGET_32BIT 
+    && (register_operand (operands[0], TImode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "loadptr")
+   (set_attr "mode" "SI")])
 
 (define_insn "*movsi_internal"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*m")
