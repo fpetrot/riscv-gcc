@@ -816,10 +816,10 @@ layout_decl (tree decl, unsigned int known_align)
   if ((code == PARM_DECL || (code == VAR_DECL && !DECL_NONLOCAL_FRAME (decl)))
       && !DECL_EXTERNAL (decl))
     {
-      tree size = DECL_SIZE_UNIT (decl);
-
 // FIXME disable this option for 128-bit target because of compatibility issues
 #if 0
+      tree size = DECL_SIZE_UNIT (decl);
+
       if (size != 0 && TREE_CODE (size) == INTEGER_CST)
 	{
 	  /* -Wlarger-than= argument of HOST_WIDE_INT_MAX is treated
