@@ -1,6 +1,7 @@
 /* pic used here to prevent the assembler to emit .nopic directive.  */
 /* { dg-do compile } */
 /* { dg-options "-march=rv32imafd_xmipscbop -fpic" { target { rv32 } } } */
+/* { dg-options "-march=rv128imafd_xmipscbop -fpic -mabi=llp128d" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64imafd_xmipscbop -fpic -mabi=lp64d" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 

@@ -1,5 +1,6 @@
 /* { dg-do compile { target bitint } } */
 /* { dg-options "-mcpu=thead-c906 -ftracer -fno-tree-dominator-opts -O2 -fharden-conditional-branches" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 
 int g;
 

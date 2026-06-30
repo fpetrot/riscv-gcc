@@ -1,4 +1,5 @@
 /* { dg-do run { target riscv_zbkc_ok } } */
+/* { dg-options "-march=rv128gc_zbkc -fdump-tree-crc -fdump-rtl-dfinish  -fdisable-tree-phiopt2 -fdisable-tree-phiopt3" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_zbkc -fdump-tree-crc -fdump-rtl-dfinish  -fdisable-tree-phiopt2 -fdisable-tree-phiopt3" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zbkc -fdump-tree-crc -fdump-rtl-dfinish  -fdisable-tree-phiopt2 -fdisable-tree-phiopt3" { target { rv32 } } } */
 

@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-g" "-Oz" "-Os" "-flto" } } */
+/* { dg-options "-march=rv128gc_xtheadmempair -mtune=thead-c906" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_xtheadmempair -mtune=thead-c906" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_xtheadmempair -mtune=thead-c906" { target { rv32 } } } */
 

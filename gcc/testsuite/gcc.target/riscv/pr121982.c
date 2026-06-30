@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-mcpu=tt-ascalon-d8 -mtune=tt-ascalon-d8" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 
 /* Verify we don't ICE on the following test cases.  */
 

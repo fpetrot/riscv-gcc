@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" "-Os" "-Oz" } } */
+/* { dg-options "-march=rv128gc_xtheadbb_xtheadmemidx" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_xtheadbb_xtheadmemidx" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_xtheadbb_xtheadmemidx" { target { rv32 } } } */
 

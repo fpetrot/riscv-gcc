@@ -1,6 +1,7 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xt-c9501fdvt" { target { rv64 } } } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* XuanTie C950 => rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif
                _zicclsm_ziccrse_zicfilp_zicfiss_zicntr_zicond_zicsr_zifencei
 	       _zihintntl_zihintpause_zihpm_zimop_za64rs_zabha_zacas

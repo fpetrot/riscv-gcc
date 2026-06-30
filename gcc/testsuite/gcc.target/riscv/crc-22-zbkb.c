@@ -1,4 +1,5 @@
 /* { dg-do run { target riscv_zbkb } } */
+/* { dg-options "-march=rv128gc_zbkb -fdump-tree-crc-details" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_zbkb -fdump-tree-crc-details" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zbkb -fdump-tree-crc-details" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-Oz" "-Og" "-flto"} } */

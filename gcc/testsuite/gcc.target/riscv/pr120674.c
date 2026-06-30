@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-g -w -march=rv32gcv -mabi=ilp32" { target rv32 } } */
+/* { dg-additional-options "-g -w -march=rv128gcv -mabi=llp128d" { target { rv128 } } } */ 
 /* { dg-additional-options "-g -w -march=rv64gcv -mabi=lp64d" { target rv64 } } */
 
 #pragma riscv intrinsic "vector"

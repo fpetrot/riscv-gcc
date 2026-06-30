@@ -1,6 +1,7 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xt-c910" { target { rv64 } } } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* XuanTie C910 => rv64imafdc_zicntr_zicsr_zifencei_zihpm_zfh_xtheadba_
 xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_xtheadmac_
 xtheadmemidx_xtheadmempair_xtheadsync */

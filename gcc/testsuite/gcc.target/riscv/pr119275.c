@@ -1,4 +1,5 @@
 /* { dg-do compile { target int128 } } */
+/* { dg-options "-march=rv128gv -mabi=llp128d -mrvv-vector-bits=zvl" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gv -mabi=lp64d -mrvv-vector-bits=zvl" { target { rv64 } } } */
 
 __int128 h, j;

@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-options "-march=rv32gc_zfh_xtheadvector -mabi=ilp32d -O2 -save-temps" { target { rv32 } } } */
+/* { dg-options "-march=rv128gc_zfh_xtheadvector -mabi=llp128d -O2 -save-temps" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_zfh_xtheadvector -mabi=lp64d -O2 -save-temps" { target { rv64 } } } */
 
 #include <math.h>

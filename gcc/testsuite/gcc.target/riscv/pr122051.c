@@ -1,5 +1,6 @@
 /* { dg-do compile { target int128 } } */
 /* { dg-additional-options "-mrvv-vector-bits=zvl -mcpu=xt-c920 -w" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 
 typedef __attribute__((__vector_size__(4))) char B;
 typedef __attribute__((__vector_size__(16))) long V;

@@ -1,6 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xiangshan-nanhu" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* XiangShan Nanhu => rv64imafdc_zba_zbb_zbc_zbs_zbkb_zbkc_zbkx_zknd
                       _zkne_zknh_zksed_zksh_svinval_zicbom_zicboz */
 

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target hard_float } */
+/* { dg-options "-march=rv128gc -mabi=llp128d  -ftrapping-math" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc -mabi=lp64d  -ftrapping-math" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc -mabi=ilp32d -ftrapping-math" { target { rv32 } } } */
 

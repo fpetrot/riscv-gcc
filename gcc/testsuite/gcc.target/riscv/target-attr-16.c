@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-march=rv32gc_zba" { target { rv32 } } } */
+/* { dg-options "-march=rv128gc_zba" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_zba" { target { rv64 } } } */
 
 __attribute__((target("arch=+zba,+zbb")))

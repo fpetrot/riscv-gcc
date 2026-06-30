@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
+/* { dg-options "-O3 -march=rv128gcv -mrvv-max-lmul=m8 -Wno-overflow" { target { rv128 } } } */ 
 /* { dg-options "-O3 -march=rv64gcv -mrvv-max-lmul=m8 -Wno-overflow" { target { rv64 } } } */
 /* { dg-options "-O3 -march=rv32gcv -mrvv-max-lmul=m8 -Wno-overflow" { target { rv32 } } } */
 
