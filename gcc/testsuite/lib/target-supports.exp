@@ -2052,6 +2052,21 @@ proc check_effective_target_rv64 { } {
     }]
 }
 
+# Return 1 if the target is RV128, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv128 { } {
+    # Check that we are compiling for RV128 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv128 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 128
+       #error "Not RV128"
+       #endif
+       #endif
+    }]
+}
+
 # Return 1 if the target abi is __riscv_float_abi_soft, 0 otherwise.
 # Cache the result.
 
@@ -2592,6 +2607,8 @@ proc riscv_get_arch { } {
 	set gcc_march rv32$gcc_march
     } elseif { [check_effective_target_rv64] } {
 	set gcc_march rv64$gcc_march
+    } elseif { [check_effective_target_rv128] } {
+	set gcc_march rv128$gcc_march
     } else {
 	set gcc_march ""
     }
