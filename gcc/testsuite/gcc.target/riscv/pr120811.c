@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-O2 -march=rv128gc -mabi=llp128d -fdump-rtl-reload -fdump-rtl-late_combine2" { target { rv128 } } } */ 
 /* { dg-options "-O2 -march=rv64gc -mabi=lp64d -fdump-rtl-reload -fdump-rtl-late_combine2" { target { rv64 } } } */
 /* { dg-options "-O2 -march=rv32gc -mabi=ilp32d -fdump-rtl-reload -fdump-rtl-late_combine2" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } "-fomit-frame-pointer" } */

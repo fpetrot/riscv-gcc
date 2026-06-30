@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32i_zfbfmin -mabi=ilp32f -O" { target { rv32 } } } */
+/* { dg-options "-march=rv128i_zfbfmin -mabi=llp128f -O" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64i_zfbfmin -mabi=lp64f -O" { target { rv64 } } } */
 
 /* 1) bf -> sf               fcvt.s.bf16  */

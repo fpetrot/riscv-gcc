@@ -1,6 +1,7 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xt-c910v2" { target { rv64 } } } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* XuanTie C910v2 => rv64imafdc_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_
 zifencei _zihintntl_zihintpause_zihpm_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_
 zbb_zbc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_xtheadcondmov_xtheadfmemidx_

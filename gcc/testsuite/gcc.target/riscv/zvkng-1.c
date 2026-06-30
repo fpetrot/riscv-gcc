@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
+/* { dg-options "-march=rv128gc_zvkned_zvknhb_zvkb_zvkt_zvkg" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_zvkned_zvknhb_zvkb_zvkt_zvkg" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zvkned_zvknhb_zvkb_zvkt_zvkg" { target { rv32 } } } */
 

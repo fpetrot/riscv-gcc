@@ -1,4 +1,5 @@
 /* { dg-do compile { target { rv64 } } } */
+/* { dg-options "-march=rv128gc -mabi=llp128d -O3" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc -mabi=lp64d -O3" { target { rv64 } } } */
 
 long foo (long a, long b)

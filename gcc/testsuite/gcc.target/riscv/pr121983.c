@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=xiangshan-nanhu" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 
 struct {
   int a;

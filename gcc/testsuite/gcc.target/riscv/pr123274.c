@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-O2 -march=rv128id" { target { rv128 } } } */ 
 /* { dg-options "-O2 -march=rv64id" { target rv64 } } */
 /* { dg-options "-O2 -march=rv32id" { target rv32 } } */
 unsigned a, b;

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32imafdc_zfa_zfh -mabi=ilp32d -O0" { target { rv32 } } } */
+/* { dg-options "-march=rv128imafdc_zfa_zfh -mabi=llp128d -O0" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64imafdc_zfa_zfh -mabi=lp64d -O0" { target { rv64 } } } */
 
 void foo_float16 ()

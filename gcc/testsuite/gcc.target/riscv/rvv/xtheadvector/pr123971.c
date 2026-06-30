@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -mcpu=xt-c920 -mrvv-vector-bits=zvl" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 
 __attribute__((__vector_size__(sizeof(int)))) int u;
 __attribute__((__vector_size__(4 * sizeof(int)))) int v;

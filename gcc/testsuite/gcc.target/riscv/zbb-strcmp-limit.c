@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-minline-strcmp -minline-strncmp --param=riscv-strcmp-inline-limit=32 -march=rv32gc_zbb" { target { rv32 } } } */
+/* { dg-options "-minline-strcmp -minline-strncmp --param=riscv-strcmp-inline-limit=32 -march=rv128gc_zbb" { target { rv128 } } } */ 
 /* { dg-options "-minline-strcmp -minline-strncmp --param=riscv-strcmp-inline-limit=32 -march=rv64gc_zbb" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" "-Oz" } } */
 

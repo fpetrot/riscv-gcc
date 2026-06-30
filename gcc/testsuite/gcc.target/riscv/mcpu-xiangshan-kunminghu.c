@@ -1,6 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xiangshan-kunminghu" } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* XiangShan Kunminghu => rv64imafdcbvh_sdtrig_sha_shcounterenw_shgatpa
                       _shlcofideleg_shtvala_shvsatpa_shvstvala_shvstvecd
                       _smaia_smcsrind_smdbltrp_smmpm_smnpm_smrnmi_smstateen

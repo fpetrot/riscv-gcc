@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gv_xandesvdot -O3 -mabi=ilp32" { target { rv32 } } } */
+/* { dg-options "-march=rv128gv_xandesvdot -O3 -mabi=llp128d" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gv_xandesvdot -O3 -mabi=lp64d" { target { rv64 } } } */
 
 #include "andes_vector.h"

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-march=rv128imf_zfa_zfhmin -mabi=llp128f"  { target { rv128 } } } */ 
 /* { dg-options "-march=rv64imf_zfa_zfhmin -mabi=lp64f"  { target { rv64 } } } */
 /* { dg-options "-march=rv32imf_zfa_zfhmin -mabi=ilp32f" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-Og" "-Oz"} } */

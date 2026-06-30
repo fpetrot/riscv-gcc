@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-march=rv128gcv_zvkned -mabi=llp128d" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gcv_zvkned -mabi=lp64d" { target rv64 } } */
 /* { dg-options "-march=rv32gcv_zvkned -mabi=ilp32" { target rv32 } } */
 

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=thead-c906" { target { rv64 } } } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* T-Head XuanTie C906 => rv64imafdc */
 
 #if !((__riscv_xlen == 64)		\

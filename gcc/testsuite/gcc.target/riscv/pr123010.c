@@ -1,4 +1,5 @@
 /* { dg-do compile { target rv64 } } */
+/* { dg-options "-O3 -march=rv128gc -mabi=llp128" { target { rv128 } } } */ 
 /* { dg-options "-O3 -march=rv64gc -mabi=lp64" { target rv64 } } */
 #include <stdint-gcc.h>
 

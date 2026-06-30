@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-DT=int -march=rv128gc_zba -mabi=llp128d -mbranch-cost=4" { target { rv128 } } } */ 
 /* { dg-additional-options "-DT=int -march=rv64gc_zba -mabi=lp64d -mbranch-cost=4" { target rv64 } } */
 /* { dg-additional-options "-DT=short -march=rv32gc_zba -mabi=ilp32 -mbranch-cost=4" { target rv32 } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */

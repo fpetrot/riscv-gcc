@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-O2 -march=rv128gc_zbs_zicond -mabi=llp128d" { target { rv128 } } } */ 
 /* { dg-options "-O2 -march=rv64gc_zbs_zicond -mabi=lp64d" { target rv64} } */
 
 /* Elide a short forward branch and generate a czero instead.  */

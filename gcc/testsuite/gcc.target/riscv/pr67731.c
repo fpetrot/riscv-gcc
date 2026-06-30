@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-O2 -march=rv128gcbv -mabi=llp128d -fno-unroll-loops" { target { rv128 } } } */ 
 /* { dg-options "-O2 -march=rv64gcbv -mabi=lp64d -fno-unroll-loops" { target { rv64 } } } */
 /* { dg-options "-O2 -march=rv32gcbv -mabi=ilp32 -fno-unroll-loops" { target { rv32 } } } */
 

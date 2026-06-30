@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32i -mabi=ilp32 -O" { target { rv32 } } } */
+/* { dg-options "-march=rv128i -mabi=llp128 -O" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64i -mabi=lp64 -O" { target { rv64 } } } */
 
 /* 1) bf -> sf (call      __extendbfsf2)  */

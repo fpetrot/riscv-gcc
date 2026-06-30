@@ -1,4 +1,4 @@
-/* { dg-do run { target { rv32 || rv64 } } } */
+/* { dg-do run { target { rv32 || { rv64 || rv128 } } } } */
 /* { dg-additional-options "-std=c99" } */
 
 #include "sat_arith.h"

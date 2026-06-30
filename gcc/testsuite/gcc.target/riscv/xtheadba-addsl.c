@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-options "-march=rv32gc_xtheadba" { target { rv32 } } } */
+/* { dg-options "-march=rv128gc_xtheadba" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gc_xtheadba" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 

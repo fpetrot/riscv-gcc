@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-march=rv128gcv_zvl256b -mabi=llp128d -O3 -fsigned-char -fno-strict-aliasing -fwrapv -std=gnu99" { target { rv128 } } } */ 
 /* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3 -fsigned-char -fno-strict-aliasing -fwrapv -std=gnu99" { target rv64 } } */
 /* { dg-options "-march=rv32gcv_zvl256b -mabi=ilp32 -O3 -fsigned-char -fno-strict-aliasing -fwrapv -std=gnu99" { target rv32 } } */
 /* { dg-require-effective-target rvv_zvl_ge_256b_ok } */

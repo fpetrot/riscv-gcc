@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=spacemit-x100" { target { rv64 } } } */
+/* { dg-skip-if "This CPU doesn't support 128bits" { riscv128-*-* } } */
 /* Spacemit X100 => rva23s64_smepmp_smnpm_smstateen_sspm_zbc_zbkc_
  * zfbfmin_zfh_zvbc_zvfbfwma_zvfh_zvknc_zvkng_zvknha_zvksc_zvksg_
  * zvl256b_xsmtvdot
