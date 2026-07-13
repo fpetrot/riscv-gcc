@@ -189,7 +189,7 @@ ARCH_UNSET_CLEANUP_SPECS \
 #define UNITS_PER_FP_ARG						\
   ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
     || riscv_abi == ABI_LP64 || riscv_abi == ABI_LP64E		\
-    || riscv_abi == ABI_LLP128)			\
+    || riscv_abi == ABI_LL128 || riscv_abi == ABI_LLP128)			\
    ? 0 									\
    : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F ||             \
    riscv_abi == ABI_LLP128F) ? 4 : 8))
@@ -197,7 +197,7 @@ ARCH_UNSET_CLEANUP_SPECS \
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
-#define LONG_LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 128 : 64)
+#define LONG_LONG_TYPE_SIZE (riscv_abi >= ABI_LL128 ? 128 : 64)
 #define POINTER_SIZE (riscv_abi >= ABI_LLP128 ? 128 : (riscv_abi >= ABI_LP64 ? 64 : 32))
 #define LONG_TYPE_SIZE (riscv_abi >= ABI_LLP128 ? 64 : POINTER_SIZE)
 
@@ -1256,6 +1256,7 @@ extern bool need_shadow_stack_push_pop_p ();
   "%{mabi=lp64e:lp64e}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
+  "%{mabi=ll128:ll128}" \
   "%{mabi=llp128:llp128}" \
   "%{mabi=llp128f:llp128f}" \
   "%{mabi=llp128d:llp128d}" \

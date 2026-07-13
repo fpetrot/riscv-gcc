@@ -30,6 +30,7 @@ enum riscv_abi_type {
   ABI_LP64E,
   ABI_LP64F,
   ABI_LP64D,
+  ABI_LL128,
   ABI_LLP128,
   ABI_LLP128F,
   ABI_LLP128D

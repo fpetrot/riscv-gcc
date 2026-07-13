@@ -8117,6 +8117,8 @@ riscv_warn_func_return (tree decl)
 static void
 riscv_va_start (tree valist, rtx nextarg)
 {
+  if (Pmode != GET_MODE (nextarg))
+    nextarg = convert_modes (Pmode, GET_MODE (nextarg), nextarg, 0);
   nextarg = plus_constant (Pmode, nextarg, -cfun->machine->varargs_size);
   std_expand_builtin_va_start (valist, nextarg);
 }
@@ -12276,7 +12278,7 @@ riscv_option_override (void)
     error ("z*inx requires ABI ilp32, ilp32e, lp64 or lp64e");
 
   /* We do not yet support ILP32 on RV64.  */
-  if (BITS_PER_WORD != POINTER_SIZE)
+  if ((BITS_PER_WORD != POINTER_SIZE) && riscv_abi != ABI_LL128)
     error ("ABI requires %<-march=rv%d%>", POINTER_SIZE);
 
   /* Validate -mpreferred-stack-boundary= value.  */

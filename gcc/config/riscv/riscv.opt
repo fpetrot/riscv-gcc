@@ -74,6 +74,9 @@ EnumValue
 Enum(abi_type) String(lp64d) Value(ABI_LP64D)
 
 EnumValue
+Enum(abi_type) String(ll128) Value(ABI_LL128)
+
+EnumValue
 Enum(abi_type) String(llp128) Value(ABI_LLP128)
 
 EnumValue

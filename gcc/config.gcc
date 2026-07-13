@@ -4835,7 +4835,7 @@ case "${target}" in
 			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
 			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
 			lp64e) with_arch="rv64e" ;;
-			llp128 | llp128f | llp128d) with_arch="rv128gc" ;;
+			llp128 | llp128f | llp128d | ll128) with_arch="rv128gc" ;;
 			*) with_arch="rv${xlen}gc" ;;
 			esac
 			;;
@@ -4854,7 +4854,7 @@ case "${target}" in
 		# pick a default based on the ISA, preferring soft-float
 		# unless the D extension is present.
 		case "${with_abi}" in
-		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64e | lp64f | lp64d | llp128 | llp128f | llp128d)
+		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64e | lp64f | lp64d | llp128 | llp128f | llp128d | ll128)
 			;;
 		"")
 			case "${with_arch}" in
@@ -4890,6 +4890,7 @@ case "${target}" in
 		| lp64d,rva23u64* | lp64d,rva23s64* \
 		| lp64d,rvb23u64* | lp64d,rvb23s64 \
 		| llp128,rv128* \
+		| ll128,rv128* \
 		| llp128f,rv128*f* | llp128f,rv128g* \
 		| llp128d,rv128*d* | llp128d,rv128g*)
 			;;
@@ -4942,7 +4943,7 @@ case "${target}" in
 			case ${with_multilib_list} in
 			ilp32 | ilp32f | ilp32d \
 			| lp64 | lp64f | lp64d  \
-			| llp128 | llp128f | llp128d)
+			| llp128 | llp128f | llp128d | ll128)
 				TM_MULTILIB_CONFIG="${with_arch},${with_multilib_list}"
 				;;
 			*)

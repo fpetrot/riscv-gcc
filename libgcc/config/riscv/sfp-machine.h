@@ -73,7 +73,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif
 
-#if __riscv_xlen == 64
+#if __riscv_xlen == 64 || __riscv_xlen == 128
 typedef int TItype __attribute__ ((mode (TI)));
 typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define TI_BITS (__CHAR_BIT__ * (int)sizeof(TItype))
