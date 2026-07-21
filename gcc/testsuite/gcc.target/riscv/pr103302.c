@@ -8,8 +8,8 @@ typedef unsigned short __attribute__((__vector_size__ (32))) v256u16;
 typedef unsigned short __attribute__((__vector_size__ (64))) v512u16;
 typedef unsigned int u32;
 typedef unsigned int __attribute__((__vector_size__ (4))) v512u32;
-typedef unsigned long long __attribute__((__vector_size__ (32))) v256u64;
-typedef unsigned long long __attribute__((__vector_size__ (64))) v512u64;
+typedef unsigned long __attribute__((__vector_size__ (32))) v256u64;
+typedef unsigned long __attribute__((__vector_size__ (64))) v512u64;
 typedef unsigned __int128 __attribute__((__vector_size__ (32))) v256u128;
 typedef unsigned __int128 __attribute__((__vector_size__ (64))) v512u128;
 

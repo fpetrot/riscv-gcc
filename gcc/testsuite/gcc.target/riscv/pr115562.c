@@ -2,9 +2,15 @@
 
 void foo (void);
 
+#if __riscv_xlen == 128
+__extension__ typedef unsigned long long size_t;
+#else
+typedef unsigned long size_t;
+#endif
+
 __attribute__((target("arch=+zbb")))
 void*
-memcpy (void *d, const void *s, unsigned long n)
+memcpy (void *d, const void *s, size_t n)
 {
   (void) s;
   (void) n;

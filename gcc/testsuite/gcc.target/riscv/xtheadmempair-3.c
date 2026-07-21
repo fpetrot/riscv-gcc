@@ -8,8 +8,10 @@
 
 #if __riscv_xlen == 32
 typedef uint32_t xlen_t;
-#else
+#elif __riscv_xlen == 64
 typedef uint64_t xlen_t;
+#else
+typedef unsigned __int128 xlen_t;
 #endif
 
 void foo (xlen_t, xlen_t, xlen_t, xlen_t, xlen_t, xlen_t, xlen_t, xlen_t);

@@ -12,7 +12,7 @@ struct node {
 
 /*
 **load_value:
-**	l[wd]	[at][0-9],0\(a0\)
+**	l[wdq]	[at][0-9],0\(a0\)
 **	lw	a0,0\([at][0-9]\)
 **	ret
 */

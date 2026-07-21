@@ -8,7 +8,7 @@ double d;
 void *p;
 char *q;
 char x;
-long u;
+long long u;
 
 char *bar(int, int);
 
@@ -22,6 +22,6 @@ foo(V v)
     __builtin_strcat (p, 7 + q);
     d += __builtin_stdc_rotate_left (
         (unsigned __int128) u | h << *__builtin_strcat (p, 7 + q), j);
-    u += (long) __builtin_memmove (&y, &v, 2);
+    u += (long long) __builtin_memmove (&y, &v, 2);
   }
 }
