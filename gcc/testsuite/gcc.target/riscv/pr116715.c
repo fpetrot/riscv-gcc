@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-march=rv128gc_zbs -mabi=llp128d" { target { riscv128*-*-* } } } */
 /* { dg-options "-march=rv64gc_zbs -mabi=lp64d" { target { riscv64*-*-* } } } */
 /* { dg-options "-march=rv32gc_zbs -mabi=ilp32" { target { riscv32*-*-* } } } */
 #include <stdint-gcc.h>

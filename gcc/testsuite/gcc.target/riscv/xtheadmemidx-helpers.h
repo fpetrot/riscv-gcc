@@ -2,9 +2,13 @@
 #define XTHEADMEMIDX_HELPERS_H
 
 #include <stdint-gcc.h>
-
+#if __riscv_xlen == 128
+#define intX_t long long
+#define uintX_t unsigned long long
+#else
 #define intX_t long
 #define uintX_t unsigned long
+#endif
 
 #define PRE_DEC_LOAD(T, N)						\
   void									\

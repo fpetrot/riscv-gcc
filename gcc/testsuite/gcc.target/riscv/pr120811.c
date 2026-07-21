@@ -15,7 +15,7 @@ void q() {
     for (int j = ag; j; ++j) {
       int ao = 0;
       for (; ao < aj; ao++) {
-        long ap = ao + j;
+        long long ap = ao + j;
         double ar = ad[ap] = ae[ap], az;
         switch (m)
         case 4: {

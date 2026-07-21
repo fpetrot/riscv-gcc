@@ -7,9 +7,12 @@
 #if __riscv_xlen == 32
 #define ONE 1U
 #define TYPE unsigned int
-#else
+#elif __riscv_xlen == 64
 #define ONE 1UL
 #define TYPE unsigned long
+#else
+#define ONE 1ULL
+#define TYPE unsigned long long 
 #endif
 
 #define F1(C) TYPE test_01##C (TYPE a) { return (a << (__riscv_xlen - C)) | ((a >> C) ^ 1); }
