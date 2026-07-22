@@ -264,7 +264,7 @@ builtin_memref::builtin_memref (pointer_query &ptrqry, gimple *stmt, tree expr,
   refoff (HOST_WIDE_INT_MIN),
   offrange (),
   sizrange (),
-  maxobjsize (tree_to_shwi (max_object_size ())),
+  maxobjsize (tree_to_stwi (max_object_size ())),
   strbounded_p (),
   stmt (stmt),
   m_ptr_qry (ptrqry)
