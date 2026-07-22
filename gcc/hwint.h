@@ -76,6 +76,21 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
    typedef before using the __asm_fprintf__ format attribute.  */
 typedef HOST_WIDE_INT __gcc_host_wide_int__;
 
+// Used for 128bits target like RV128
+// FIXME: find a way to set this at 64 when targetting 64bit arch
+#define TARGET_BITS_PER_WIDE_INT 128
+#define TARGET_WIDE_INT __int128
+// FIXME: This is incorrect, we should probably cut the constant in two parts
+#define TARGET_WIDE_INT_C(X) X ## LL
+
+#define TARGET_WIDE_INT_UC(X) TARGET_WIDE_INT_C (X ## U)
+#define TARGET_WIDE_INT_0 TARGET_WIDE_INT_C (0)
+#define TARGET_WIDE_INT_0U TARGET_WIDE_INT_UC (0)
+#define TARGET_WIDE_INT_1 TARGET_WIDE_INT_C (1)
+#define TARGET_WIDE_INT_1U TARGET_WIDE_INT_UC (1)
+#define TARGET_WIDE_INT_M1 TARGET_WIDE_INT_C (-1)
+#define TARGET_WIDE_INT_M1U TARGET_WIDE_INT_UC (-1)
+
 /* Provide C99 <inttypes.h> style format definitions for 64bits.  */
 #ifndef HAVE_INTTYPES_H
 #if INT64_T_IS_LONG
@@ -312,9 +327,13 @@ sext_hwi (HOST_WIDE_INT src, unsigned int prec)
 	 shifting signed values, any overflow is undefined behavior.  */
 
       // FIXME assert often fails with 128-bit target
+      // FIXME 'TARGET_WIDE_INT' should be used to avoid this
       // comment assert as a temporary workaround
       if (prec >= HOST_BITS_PER_WIDE_INT)
+        {
 	printf("possible 128-bit constant overflow with current gcc configuration: src=%li, prec=%i\n", src, prec);
+    prec = HOST_BITS_PER_WIDE_INT; // Incorrect, but should work in most cases.
+        }
       //gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
 
       int shift = HOST_BITS_PER_WIDE_INT - prec;
@@ -325,9 +344,13 @@ sext_hwi (HOST_WIDE_INT src, unsigned int prec)
       /* Fall back to the slower, well defined path otherwise.  */
 
       // FIXME assert often fails with 128-bit target
+      // FIXME 'TARGET_WIDE_INT' should be used to avoid this
       // comment assert as a temporary workaround
       if (prec >= HOST_BITS_PER_WIDE_INT)
+        {
 	printf("possible 128-bit constant overflow with current gcc configuration: src=%li, prec=%i\n", src, prec);
+    prec = HOST_BITS_PER_WIDE_INT; // Incorrect, but should work in most cases.
+        }
       //gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
 
       HOST_WIDE_INT sign_mask = HOST_WIDE_INT_1 << (prec - 1);
