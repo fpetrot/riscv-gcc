@@ -3162,7 +3162,9 @@ riscv_unspec_offset_high (rtx temp, rtx addr, enum riscv_symbol_type symbol_type
 
 static rtx riscv_got_load_tls_gd (rtx dest, rtx sym)
 {
-  if (Pmode == DImode)
+  if (Pmode == TImode)
+    return gen_got_load_tls_gdti (dest, sym);
+  else if (Pmode == DImode)
     return gen_got_load_tls_gddi (dest, sym);
   else
     return gen_got_load_tls_gdsi (dest, sym);
@@ -3172,7 +3174,9 @@ static rtx riscv_got_load_tls_gd (rtx dest, rtx sym)
 
 static rtx riscv_got_load_tls_ie (rtx dest, rtx sym)
 {
-  if (Pmode == DImode)
+  if (Pmode == TImode)
+    return gen_got_load_tls_ieti (dest, sym);
+  else if (Pmode == DImode)
     return gen_got_load_tls_iedi (dest, sym);
   else
     return gen_got_load_tls_iesi (dest, sym);
@@ -3183,7 +3187,9 @@ static rtx riscv_got_load_tls_ie (rtx dest, rtx sym)
 static rtx riscv_tls_add_tp_le (rtx dest, rtx base, rtx sym)
 {
   rtx tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
-  if (Pmode == DImode)
+  if (Pmode == TImode)
+    return gen_tls_add_tp_leti (dest, base, tp, sym);
+  else if (Pmode == DImode)
     return gen_tls_add_tp_ledi (dest, base, tp, sym);
   else
     return gen_tls_add_tp_lesi (dest, base, tp, sym);
@@ -3247,7 +3253,9 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	  if (temp == NULL)
 	    temp = gen_reg_rtx (Pmode);
 
-	  if (Pmode == DImode)
+	  if (Pmode == TImode)
+	    emit_insn (gen_auipcti (temp, copy_rtx (addr), GEN_INT (seqno)));
+	  else if (Pmode == DImode)
 	    emit_insn (gen_auipcdi (temp, copy_rtx (addr), GEN_INT (seqno)));
 	  else
 	    emit_insn (gen_auipcsi (temp, copy_rtx (addr), GEN_INT (seqno)));
@@ -5974,7 +5982,9 @@ riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1, bool *in
      as sign extended.  Note that it's also properly zero extended,
      but it's probably more profitable to expose it as sign extended.  */
   rtx t;
-  if (TARGET_64BIT && GET_MODE (target) == SImode)
+  if (TARGET_128BIT && GET_MODE (target) == SImode)
+    t = gen_reg_rtx (TImode);
+  else if (TARGET_64BIT && GET_MODE (target) == SImode)
     t = gen_reg_rtx (DImode);
   else
     t = target;
@@ -9884,7 +9894,9 @@ riscv_adjust_multi_push_cfi_prologue (int saved_size)
 static void
 riscv_emit_stack_tie (rtx reg)
 {
-  if (Pmode == SImode)
+  if (Pmode == TImode)
+    emit_insn (gen_stack_tieti (stack_pointer_rtx, reg));
+  else if (Pmode == SImode)
     emit_insn (gen_stack_tiesi (stack_pointer_rtx, reg));
   else
     emit_insn (gen_stack_tiedi (stack_pointer_rtx, reg));
@@ -11854,7 +11866,7 @@ riscv_file_end ()
 
       /* The program property descriptor is aligned to 4 bytes in 32-bit
 	 objects and 8 bytes in 64-bit objects.  */
-      unsigned p2align = TARGET_64BIT ? 3 : 2;
+      unsigned p2align = TARGET_128BIT ? 4 : (TARGET_64BIT ? 3 : 2);
 
       fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
       /* name length.  */
@@ -14548,7 +14560,9 @@ riscv_expand_xmode_usmul (rtx dest, rtx x, rtx y)
 
   riscv_emit_binary (MULT, mul, x, y);
 
-  if (TARGET_64BIT)
+  if (TARGET_128BIT)
+    emit_insn (gen_umulti3_highpart (mulhu, x, y));
+  else if (TARGET_64BIT)
     emit_insn (gen_umuldi3_highpart (mulhu, x, y));
   else
     emit_insn (gen_umulsi3_highpart (mulhu, x, y));
@@ -15514,14 +15528,18 @@ expand_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
 
   if (TARGET_ZBKC || TARGET_ZBC)
     {
-      if (TARGET_64BIT)
+      if (TARGET_128BIT)
+	emit_insn (gen_riscv_clmul_ti (a0, a0, t0));
+      else if (TARGET_64BIT)
 	emit_insn (gen_riscv_clmul_di (a0, a0, t0));
       else
 	emit_insn (gen_riscv_clmul_si (a0, a0, t0));
 
       riscv_expand_op (LSHIFTRT, word_mode, a0, a0,
 		       gen_int_mode (crc_size, word_mode));
-      if (TARGET_64BIT)
+      if (TARGET_128BIT)
+	emit_insn (gen_riscv_clmul_ti (a0, a0, t1));
+      else if (TARGET_64BIT)
 	emit_insn (gen_riscv_clmul_di (a0, a0, t1));
       else
 	emit_insn (gen_riscv_clmul_si (a0, a0, t1));
@@ -15609,7 +15627,9 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
 
   if (TARGET_ZBKC || TARGET_ZBC)
     {
-      if (TARGET_64BIT)
+      if (TARGET_128BIT)
+	emit_insn (gen_riscv_clmul_ti (a0, a0, t0));
+      else if (TARGET_64BIT)
 	emit_insn (gen_riscv_clmul_di (a0, a0, t0));
       else
 	emit_insn (gen_riscv_clmul_si (a0, a0, t0));
@@ -15617,7 +15637,9 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
       rtx num_shift = gen_int_mode (BITS_PER_WORD - data_size, word_mode);
       riscv_expand_op (ASHIFT, word_mode, a0, a0, num_shift);
 
-      if (TARGET_64BIT)
+      if (TARGET_128BIT)
+	emit_insn (gen_riscv_clmulh_ti (a0, a0, t1));
+      else if (TARGET_64BIT)
 	emit_insn (gen_riscv_clmulh_di (a0, a0, t1));
       else
 	emit_insn (gen_riscv_clmulh_si (a0, a0, t1));

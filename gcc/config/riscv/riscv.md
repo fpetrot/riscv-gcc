@@ -1109,6 +1109,16 @@
       emit_move_insn (operands[0], t);
       DONE;
     }
+  if (TARGET_128BIT)
+    {
+      rtx t = gen_reg_rtx (TImode);
+      emit_insn (gen_subsi3_extended3 (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
 })
 
 (define_expand "subv<mode>4"
@@ -1278,7 +1288,7 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
-(define_insn "*subsi3_extended3"
+(define_insn "subsi3_extended3"
   [(set (match_operand:TI               0 "register_operand" "= r")
 	(sign_extend:TI
 	    (minus:SI (match_operand:SI 1 "reg_or_0_operand" " rJ")
@@ -1359,6 +1369,16 @@
       emit_move_insn (operands[0], t);
       DONE;
     }
+  else if (TARGET_128BIT)
+    {
+      rtx t = gen_reg_rtx (TImode);
+      emit_insn (gen_negsi2_extended3 (t, operands[1]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
 })
 
 (define_insn "negsi2_extended"
@@ -1380,7 +1400,7 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
-(define_insn "*negsi2_extended3"
+(define_insn "negsi2_extended3"
   [(set (match_operand:TI          0 "register_operand" "=r")
 	(sign_extend:TI
 	 (neg:SI (match_operand:SI 1 "register_operand" " r"))))]
@@ -2769,7 +2789,7 @@
 	    (match_operand:ANYF 1 "register_operand" " f")))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_128BIT)
     {
       rtx t = gen_reg_rtx (DImode);
       emit_insn (gen_<fix_uns>_trunc<ANYF:mode>si2_sext (t, operands[1]));
@@ -2794,7 +2814,7 @@
   [(set (match_operand:DI      0 "register_operand" "=r")
   (sign_extend:DI (fix_ops:SI
 	    (match_operand:ANYF 1 "register_operand" " f"))))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.w<u>.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2803,7 +2823,7 @@
   [(set (match_operand:DI      0 "register_operand" "=r")
 	(fix_ops:DI
 	    (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.l<u>.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2860,7 +2880,7 @@
   (sign_extend:DI (unspec:SI
 	    [(match_operand:ANYF 1 "register_operand" " f")]
 	    UNSPEC_LRINT)))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.w.<ANYF:fmt> %0,%1,dyn"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2870,7 +2890,7 @@
 	(unspec:DI
 	    [(match_operand:ANYF 1 "register_operand" " f")]
 	    UNSPEC_LRINT))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.l.<ANYF:fmt> %0,%1,dyn"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2909,7 +2929,7 @@
 	 (sign_extend:DI (unspec:SI
 			     [(match_operand:ANYF 1 "register_operand" " f")]
 		      ROUND)))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.w.<ANYF:fmt> %0,%1,<round_rm>"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2919,7 +2939,7 @@
 	(unspec:DI
 	    [(match_operand:ANYF 1 "register_operand" " f")]
     ROUND))]
-  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.l.<ANYF:fmt> %0,%1,<round_rm>"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -3535,7 +3555,7 @@
   if (riscv_expand_block_compare (temp, operands[1], operands[2],
                                   operands[3]))
     {
-      if (TARGET_64BIT)
+      if (TARGET_64BIT || TARGET_128BIT)
 	{
 	  temp = gen_lowpart (SImode, temp);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
@@ -5631,7 +5651,7 @@
   if (riscv_expand_strcmp (temp, operands[1], operands[2],
                            operands[3], operands[4]))
     {
-      if (TARGET_64BIT)
+      if (TARGET_64BIT || TARGET_128BIT)
 	{
 	  temp = gen_lowpart (SImode, temp);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
@@ -5662,7 +5682,7 @@
   if (riscv_expand_strcmp (temp, operands[1], operands[2],
                            NULL_RTX, operands[3]))
     {
-      if (TARGET_64BIT)
+      if (TARGET_64BIT || TARGET_128BIT)
 	{
 	  temp = gen_lowpart (SImode, temp);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
@@ -5724,7 +5744,7 @@
 (define_insn "*large_load_address"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (match_operand 1 "pcrel_symbol_operand" "")))]
-  "TARGET_64BIT && riscv_cmodel == CM_LARGE"
+  "(TARGET_64BIT || TARGET_128BIT) && riscv_cmodel == CM_LARGE"
   "ld\t%0,%1"
   [(set_attr "type" "load")
    (set (attr "length") (const_int 8))])

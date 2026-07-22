@@ -47,7 +47,9 @@ static rtx_insn *					\
 do_## name ## 2(rtx dest, rtx src)			\
 {							\
   rtx_insn *insn;					\
-  if (GET_MODE (dest) == DImode)			\
+  if (GET_MODE (dest) == TImode)			\
+    insn = emit_insn (gen_ ## name ## ti2 (dest, src));	\
+  else if (GET_MODE (dest) == DImode)			\
     insn = emit_insn (gen_ ## name ## di2 (dest, src));	\
   else							\
     insn = emit_insn (gen_ ## name ## si2 (dest, src));	\
@@ -61,7 +63,9 @@ static rtx_insn *						\
 do_## name ## 3(rtx dest, rtx src1, rtx src2)			\
 {								\
   rtx_insn *insn;						\
-  if (GET_MODE (dest) == DImode)				\
+  if (GET_MODE (dest) == TImode)				\
+    insn = emit_insn (gen_ ## name ## ti3 (dest, src1, src2));	\
+  else if (GET_MODE (dest) == DImode)				\
     insn = emit_insn (gen_ ## name ## di3 (dest, src1, src2));	\
   else								\
     insn = emit_insn (gen_ ## name ## si3 (dest, src1, src2));	\
