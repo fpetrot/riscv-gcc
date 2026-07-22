@@ -23,7 +23,7 @@
 	(match_operand:GPR 1 "memory_operand" ""))
    (set (match_operand:GPR 2 "register_operand" "")
 	(match_operand:GPR 3 "memory_operand" ""))]
-  "TARGET_XTHEADMEMPAIR
+  "!TARGET_128BIT && TARGET_XTHEADMEMPAIR
   && th_mempair_operands_p (operands, true, <GPR:MODE>mode)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	          (set (match_dup 2) (match_dup 3))])]
@@ -37,7 +37,7 @@
 	(match_operand:GPR 1 "register_operand" ""))
    (set (match_operand:GPR 2 "memory_operand" "")
 	(match_operand:GPR 3 "register_operand" ""))]
-  "TARGET_XTHEADMEMPAIR
+  "!TARGET_128BIT && TARGET_XTHEADMEMPAIR
   && th_mempair_operands_p (operands, false, <GPR:MODE>mode)"
   [(parallel [(set (match_dup 0) (match_dup 1))
               (set (match_dup 2) (match_dup 3))])]

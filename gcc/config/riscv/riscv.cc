@@ -9623,7 +9623,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	  continue;
 	}
 
-      if (TARGET_XTHEADMEMPAIR)
+      if (TARGET_XTHEADMEMPAIR && !TARGET_128BIT)
 	{
 	  /* Get the next reg/offset pair.  */
 	  HOST_WIDE_INT offset2 = offset;

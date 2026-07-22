@@ -35,9 +35,9 @@
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand" "r")
 		      (match_operand 2 "const_int_operand" "n")))]
-  "TARGET_XTHEADBB && (TARGET_64BIT || <MODE>mode == SImode)"
+  "TARGET_XTHEADBB && (TARGET_64BIT || TARGET_128BIT || <MODE>mode == SImode)"
   {
-    bool wform = TARGET_64BIT && (<MODE>mode == SImode);
+    bool wform = (TARGET_64BIT || TARGET_128BIT) && (<MODE>mode == SImode);
     operands[2] = GEN_INT (INTVAL (operands[2])
                   & (GET_MODE_BITSIZE (<MODE>mode) - 1));
     return wform ? "th.srriw\t%0,%1,%2" : "th.srri\t%0,%1,%2";
@@ -47,12 +47,12 @@
 
 ;; Version with explicit sign extension to facilitate sign extension
 ;; removal.
-(define_insn "*th_srrisi3_extended"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI
+(define_insn "*th_srri<mode>si3_extended"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(sign_extend:X
 	  (rotatert:SI (match_operand:SI 1 "register_operand" "r")
 		       (match_operand 2 "const_int_operand" "n"))))]
-  "TARGET_XTHEADBB && TARGET_64BIT"
+  "TARGET_XTHEADBB && (TARGET_64BIT || TARGET_128BIT)"
   {
     operands[2] = GEN_INT (INTVAL (operands[2])
 			   & (GET_MODE_BITSIZE (SImode) - 1));
@@ -114,12 +114,22 @@
 (define_insn "*zero_extendsidi2_th_extu"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_64BIT && TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    th.extu\t%0,%1,31,0
    lwu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "DI")])
+
+(define_insn "*zero_extendsiti2_th_extu"
+  [(set (match_operand:TI 0 "register_operand" "=r,r")
+	(zero_extend:TI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_128BIT && TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
+  "@
+   th.extu\t%0,%1,31,0
+   lwu\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "TI")])
 
 (define_insn "*zero_extendhi<GPR:mode>2_th_extu"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
@@ -142,9 +152,9 @@
 (define_insn "th_rev<mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(bswap:GPR (match_operand:GPR 1 "register_operand" "r")))]
-  "TARGET_XTHEADBB && (TARGET_64BIT || <MODE>mode == SImode)"
+  "TARGET_XTHEADBB && (TARGET_64BIT || TARGET_128BIT || <MODE>mode == SImode)"
   {
-    bool wform = TARGET_64BIT && (<MODE>mode == SImode);
+    bool wform = (TARGET_64BIT || TARGET_128BIT) && (<MODE>mode == SImode);
     return wform ? "th.revw\t%0,%1" : "th.rev\t%0,%1";
   }
   [(set_attr "type" "bitmanip")
