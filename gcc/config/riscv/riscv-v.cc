@@ -2503,7 +2503,7 @@ slide1_sew64_helper (int unspec, machine_mode mode, machine_mode demote_mode,
       return false;
     }
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_128BIT)
     {
       ops[4] = force_reg (scalar_mode, scalar_op);
       ops[5] = force_vector_length_operand (ops[5]);
