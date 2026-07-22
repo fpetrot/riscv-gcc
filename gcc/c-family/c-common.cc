@@ -1230,17 +1230,17 @@ c_build_shufflevector (location_t loc, tree v0, tree v1,
   for (i = 0; i < mask.length (); ++i)
     {
       tree idx = mask[i];
-      if (!tree_fits_shwi_p (idx))
+      if (!tree_fits_stwi_p (idx))
 	{
 	  if (complain)
 	    error_at (loc, "invalid element index %qE to "
 		      "%<__builtin_shufflevector%>", idx);
 	  return error_mark_node;
 	}
-      HOST_WIDE_INT iidx = tree_to_shwi (idx);
+      TARGET_WIDE_INT iidx = tree_to_stwi (idx);
       if (iidx < -1
 	  || (iidx != -1
-	      && (unsigned HOST_WIDE_INT) iidx >= v0n + v1n))
+	      && (unsigned TARGET_WIDE_INT) iidx >= v0n + v1n))
 	{
 	  if (complain)
 	    error_at (loc, "invalid element index %qE to "
@@ -1252,7 +1252,7 @@ c_build_shufflevector (location_t loc, tree v0, tree v1,
 	iidx = i;
       /* ???  Our VEC_PERM_EXPR does not allow different sized inputs,
 	 so pad out a smaller v0.  */
-      else if ((unsigned HOST_WIDE_INT) iidx >= v0n)
+      else if ((unsigned TARGET_WIDE_INT) iidx >= v0n)
 	iidx += pad;
       sel.quick_push (iidx);
     }

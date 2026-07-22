@@ -231,7 +231,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	     wider than DImode.  */
 	  scalar_mode outer_mode;
 	  if (!is_a <scalar_mode> (GET_MODE (x), &outer_mode)
-	      || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
+	      || GET_MODE_BITSIZE (outer_mode) > TARGET_BITS_PER_WIDE_INT)
 	    {
 	      /* Skip the subrtxs of this destination.  There is
 		 little value in iterating into the subobjects, so
@@ -263,7 +263,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 that case.  Remember, we can not just continue to process
 		 the inner RTXs due to the STRICT_LOW_PART.  */
 	      if (!is_a <scalar_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
+		  || GET_MODE_BITSIZE (outer_mode) > TARGET_BITS_PER_WIDE_INT)
 		{
 		  /* Skip the subrtxs of the STRICT_LOW_PART.  We can't
 		     process them because it'll set objects as no longer
@@ -283,9 +283,9 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 We also need to be careful in the case where we have an in-out
 		 operand.  If we're not careful we'd clear LIVE_TMP
 		 incorrectly.  */
-	      HOST_WIDE_INT rn = REGNO (SUBREG_REG (x));
+	      TARGET_WIDE_INT rn = REGNO (SUBREG_REG (x));
 	      int limit = group_limit (SUBREG_REG (x));
-	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
+	      for (TARGET_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
 
@@ -295,7 +295,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      /* The mode of the SUBREG tells us how many bits we can
 		 clear.  */
 	      machine_mode mode = GET_MODE (x);
-	      HOST_WIDE_INT size
+	      TARGET_WIDE_INT size
 		= exact_log2 (GET_MODE_SIZE (mode).to_constant ()) + 1;
 	      bitmap_clear_range (livenow, 4 * rn, size);
 
@@ -306,7 +306,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 
 	  /* Phase one of destination handling.  First remove any wrapper
 	     such as SUBREG or ZERO_EXTRACT.  */
-	  unsigned HOST_WIDE_INT mask
+	  unsigned TARGET_WIDE_INT mask
 	    = GET_MODE_MASK (GET_MODE_INNER (GET_MODE (x)));
 	  if (SUBREG_P (x))
 	    {
@@ -317,7 +317,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 the top of the loop which just complicates the flow even
 		 more.  */
 	      if (!is_a <scalar_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
+		  || GET_MODE_BITSIZE (outer_mode) > TARGET_BITS_PER_WIDE_INT)
 		{
 		  skipped_dest = true;
 		  iter.skip_subrtxes ();
@@ -353,7 +353,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	    }
 
 	  /* BIT >= 64 indicates something went horribly wrong.  */
-	  gcc_assert (bit <= HOST_BITS_PER_WIDE_INT - 1);
+	  gcc_assert (bit <= TARGET_BITS_PER_WIDE_INT - 1);
 
 	  /* Now handle the actual object that was changed.  */
 	  if (REG_P (x))
@@ -368,9 +368,9 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 We also need to be careful in the case where we have an in-out
 		 operand.  If we're not careful we'd clear LIVE_TMP
 		 incorrectly.  */
-	      HOST_WIDE_INT rn = REGNO (x);
+	      TARGET_WIDE_INT rn = REGNO (x);
 	      int limit = group_limit (x);
-	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
+	      for (TARGET_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
 
@@ -381,8 +381,8 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 Note that BIT need not be a power of two, consider a
 		 ZERO_EXTRACT destination.  */
 	      int start = (bit < 8 ? 0 : bit < 16 ? 1 : bit < 32 ? 2 : 3);
-	      int end = ((mask & ~HOST_WIDE_INT_UC (0xffffffff)) ? 4
-			 : (mask & HOST_WIDE_INT_UC (0xffff0000)) ? 3
+	      int end = ((mask & ~TARGET_WIDE_INT_UC (0xffffffff)) ? 4
+			 : (mask & TARGET_WIDE_INT_UC (0xffff0000)) ? 3
 			 : (mask & 0xff00) ? 2 : 1);
 	      bitmap_clear_range (livenow, 4 * rn + start, end - start);
 	    }
@@ -914,14 +914,14 @@ binop_implies_op2_fully_live (rtx_code code)
    wrapping a shift.  It really feels like this needs to be recursing down
    into operands much more often.  */
 
-unsigned HOST_WIDE_INT
-carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
+unsigned TARGET_WIDE_INT
+carry_backpropagate (unsigned TARGET_WIDE_INT mask, enum rtx_code code, rtx x)
 {
   if (mask == 0)
     return 0;
 
   enum machine_mode mode = GET_MODE_INNER (GET_MODE (x));
-  unsigned HOST_WIDE_INT mmask = GET_MODE_MASK (mode);
+  unsigned TARGET_WIDE_INT mmask = GET_MODE_MASK (mode);
 
   /* While we don't try to optimize operations on types larger
      than 64 bits, we do want to make sure not to invoke undefined
@@ -930,7 +930,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
      for that scenario indicating every possible chunk is life.  */
   scalar_int_mode smode;
   if (!is_a <scalar_int_mode> (mode, &smode)
-      || GET_MODE_BITSIZE (smode) > HOST_BITS_PER_WIDE_INT)
+      || GET_MODE_BITSIZE (smode) > TARGET_BITS_PER_WIDE_INT)
     return mmask;
 
   switch (code)
@@ -938,15 +938,15 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     case PLUS:
     case MINUS:
     case MULT:
-      return (HOST_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
+      return (TARGET_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
 
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFT:
       if (CONST_INT_P (XEXP (x, 1))
 	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
-	return (HOST_WIDE_INT) mask >> INTVAL (XEXP (x, 1));
-      return (HOST_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
+	return (TARGET_WIDE_INT) mask >> INTVAL (XEXP (x, 1));
+      return (TARGET_WIDE_INT_UC (2) << floor_log2 (mask)) - 1;
 
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
@@ -962,10 +962,10 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
       if (CONST_INT_P (XEXP (x, 1))
 	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
 	{
-	  HOST_WIDE_INT sign = 0;
-	  if (HOST_BITS_PER_WIDE_INT - clz_hwi (mask) + INTVAL (XEXP (x, 1))
+	  TARGET_WIDE_INT sign = 0;
+	  if (TARGET_BITS_PER_WIDE_INT - clz_hwi (mask) + INTVAL (XEXP (x, 1))
 	      > GET_MODE_BITSIZE (smode))
-	    sign = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (smode) - 1);
+	    sign = TARGET_WIDE_INT_1U << (GET_MODE_BITSIZE (smode) - 1);
 	  return sign | (mmask & (mask << INTVAL (XEXP (x, 1))));
 	}
       return mmask;
@@ -982,10 +982,10 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 	    return mmask & (mask << (GET_MODE_BITSIZE (smode)
 				     - exact_log2 (INTVAL (XEXP (x, 1)))));
 
-	  int bits = (HOST_BITS_PER_WIDE_INT + GET_MODE_BITSIZE (smode)
+	  int bits = (TARGET_BITS_PER_WIDE_INT + GET_MODE_BITSIZE (smode)
 		      - clz_hwi (mask) - ctz_hwi (INTVAL (XEXP (x, 1))));
 	  if (bits < GET_MODE_BITSIZE (smode))
-	    return (HOST_WIDE_INT_1U << bits) - 1;
+	    return (TARGET_WIDE_INT_1U << bits) - 1;
 	}
       return mmask;
 
@@ -998,7 +998,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 	 sign bit is on in MASK.  */
       mode = GET_MODE_INNER (GET_MODE (XEXP (x, 0)));
       if (mask & ~GET_MODE_MASK (mode))
-	mask |= HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode).to_constant ()
+	mask |= TARGET_WIDE_INT_1U << (GET_MODE_BITSIZE (mode).to_constant ()
 				     - 1);
 
       /* Recurse into the operand.  */
@@ -1032,11 +1032,11 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
       if (CONST_INT_P (XEXP (x, 1))
 	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (smode))
 	{
-	  return ((mmask & ~((unsigned HOST_WIDE_INT) mmask
+	  return ((mmask & ~((unsigned TARGET_WIDE_INT) mmask
 			     >> (INTVAL (XEXP (x, 1))
 				 + (XEXP (x, 1) != const0_rtx
 				    && code == SS_ASHIFT))))
-		  | ((HOST_WIDE_INT) mask >> INTVAL (XEXP (x, 1))));
+		  | ((TARGET_WIDE_INT) mask >> INTVAL (XEXP (x, 1))));
 	}
       return mmask;
 
@@ -1079,7 +1079,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	  const_rtx dst = SET_DEST (x);
 	  rtx src = SET_SRC (x);
 	  const_rtx y;
-	  unsigned HOST_WIDE_INT bit = 0;
+	  unsigned TARGET_WIDE_INT bit = 0;
 
 	  /* The code of the RHS of a SET.  */
 	  enum rtx_code code = GET_CODE (src);
@@ -1088,8 +1088,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	     being shared?   */
 	  if (SUBREG_P (dst) && subreg_lsb (dst).is_constant (&bit))
 	    {
-	      if (bit >= HOST_BITS_PER_WIDE_INT)
-		bit = HOST_BITS_PER_WIDE_INT - 1;
+	      if (bit >= TARGET_BITS_PER_WIDE_INT)
+		bit = TARGET_BITS_PER_WIDE_INT - 1;
 	      dst = SUBREG_REG (dst);
 	    }
 	  else if (GET_CODE (dst) == STRICT_LOW_PART)
@@ -1119,11 +1119,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		 We have to do this on a per SET basis, we might have
 		 an INSN with multiple SETS, some of which can narrow
 		 the source operand liveness, some of which may not.  */
-	      unsigned HOST_WIDE_INT dst_mask = 0;
-	      HOST_WIDE_INT rn = REGNO (dst);
-	      unsigned HOST_WIDE_INT mask_array[]
-		= { 0xff, 0xff00, HOST_WIDE_INT_UC (0xffff0000),
-		    -HOST_WIDE_INT_UC (0x100000000) };
+	      unsigned TARGET_WIDE_INT dst_mask = 0;
+	      TARGET_WIDE_INT rn = REGNO (dst);
+	      unsigned TARGET_WIDE_INT mask_array[]
+		= { 0xff, 0xff00, TARGET_WIDE_INT_UC (0xffff0000),
+		    -TARGET_WIDE_INT_UC (0x100000000) };
 	      for (int i = 0; i < 4; i++)
 		if (bitmap_bit_p (live_tmp, 4 * rn + i))
 		  dst_mask |= mask_array[i];
@@ -1141,7 +1141,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	      if (code == SIGN_EXTEND || code == ZERO_EXTEND)
 		{
 		  rtx inner = XEXP (src, 0);
-		  unsigned HOST_WIDE_INT src_mask
+		  unsigned TARGET_WIDE_INT src_mask
 		    = GET_MODE_MASK (GET_MODE_INNER (GET_MODE (inner)));
 
 		  /* DST_MASK could be zero if we had something in the SET
@@ -1209,7 +1209,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 16
 		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 32)
 		  && is_a <scalar_mode> (GET_MODE (src), &outer_mode)
-		  && GET_MODE_BITSIZE (outer_mode) <= HOST_BITS_PER_WIDE_INT)
+		  && GET_MODE_BITSIZE (outer_mode) <= TARGET_BITS_PER_WIDE_INT)
 		{
 		  /* So we have a right shift that could correspond to
 		     the second in a pair implementing QI, HI or SI -> DI
@@ -1231,12 +1231,12 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		      && (INTVAL (XEXP (src, 1))
 			  == INTVAL (XEXP (SET_SRC (prev_set), 1))))
 		    {
-		      unsigned HOST_WIDE_INT src_mask = GET_MODE_BITSIZE (GET_MODE (src)).to_constant ();
+		      unsigned TARGET_WIDE_INT src_mask = GET_MODE_BITSIZE (GET_MODE (src)).to_constant ();
 		      src_mask -= INTVAL (XEXP (src, 1));
-		      src_mask = (HOST_WIDE_INT_1U << src_mask) - 1;
+		      src_mask = (TARGET_WIDE_INT_1U << src_mask) - 1;
 
 		      /* DST_MASK has been adjusted for INSN.  We need its original value.  */
-		      unsigned HOST_WIDE_INT tmp_mask = 0;
+		      unsigned TARGET_WIDE_INT tmp_mask = 0;
 		      for (int i = 0; i < 4; i++)
 			if (bitmap_bit_p (live_tmp, 4 * rn + i))
 			  tmp_mask |= mask_array[i];
@@ -1274,7 +1274,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		 This code is just hokey as it really just handles trivial
 		 unary and binary cases.  Otherwise the loop exits and we
 		 continue iterating on sub-rtxs, but outside the set context.  */
-	      unsigned HOST_WIDE_INT save_mask = dst_mask;
+	      unsigned TARGET_WIDE_INT save_mask = dst_mask;
 	      for (;;)
 		{
 		  /* In general we want to restore DST_MASK before each loop
@@ -1305,11 +1305,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			break;
 
 		      /* If this is a wide object (more bits than we can fit
-			 in a HOST_WIDE_INT), then just break from the SET
+			 in a TARGET_WIDE_INT), then just break from the SET
 			 context.   That will cause the iterator to walk down
 			 into the subrtx and if we land on a REG we'll mark
 			 the whole think live.  */
-		      if (bit >= HOST_BITS_PER_WIDE_INT)
+		      if (bit >= TARGET_BITS_PER_WIDE_INT)
 			break;
 
 		      /* The SUBREG's mode determines the live width.  */
@@ -1317,7 +1317,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			{
 			  dst_mask <<= bit;
 			  if (!dst_mask)
-			    dst_mask = -HOST_WIDE_INT_UC (0x100000000);
+			    dst_mask = -TARGET_WIDE_INT_UC (0x100000000);
 			}
 		      y = SUBREG_REG (y);
 		    }
@@ -1329,7 +1329,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			 of the REG is a starting point.  We may refine that
 			 based on what chunks in the output were live.  */
 		      rn = 4 * REGNO (y);
-		      unsigned HOST_WIDE_INT tmp_mask = dst_mask;
+		      unsigned TARGET_WIDE_INT tmp_mask = dst_mask;
 
 		      /* If the RTX code for the SET_SRC is not one we can
 			 propagate destination liveness through, then just
@@ -1342,9 +1342,9 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			bitmap_set_bit (livenow, rn);
 		      if (tmp_mask & 0xff00)
 			bitmap_set_bit (livenow, rn + 1);
-		      if (tmp_mask & HOST_WIDE_INT_UC (0xffff0000))
+		      if (tmp_mask & TARGET_WIDE_INT_UC (0xffff0000))
 			bitmap_set_bit (livenow, rn + 2);
-		      if (tmp_mask & -HOST_WIDE_INT_UC (0x100000000))
+		      if (tmp_mask & -TARGET_WIDE_INT_UC (0x100000000))
 			bitmap_set_bit (livenow, rn + 3);
 		    }
 		  else if (!CONSTANT_P (y))
@@ -1386,8 +1386,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	       && GET_MODE_BITSIZE (GET_MODE (x)).is_constant ()
 	       && GET_MODE_BITSIZE (GET_MODE (x)).to_constant () <= 32)
 	{
-	  HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (x)).to_constant ();
-	  HOST_WIDE_INT rn = 4 * REGNO (SUBREG_REG (x));
+	  TARGET_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (x)).to_constant ();
+	  TARGET_WIDE_INT rn = 4 * REGNO (SUBREG_REG (x));
 
 	  /* If this is a promoted subreg, then more of it may be live than
 	     is otherwise obvious.  */

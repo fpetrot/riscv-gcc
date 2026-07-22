@@ -141,18 +141,18 @@ target_int_min ()
 
 /* Return the value of INT_MAX for the target.  */
 
-static inline unsigned HOST_WIDE_INT
+static inline unsigned TARGET_WIDE_INT
 target_int_max ()
 {
-  return tree_to_uhwi (TYPE_MAX_VALUE (integer_type_node));
+  return tree_to_utwi (TYPE_MAX_VALUE (integer_type_node));
 }
 
 /* Return the value of SIZE_MAX for the target.  */
 
-static inline unsigned HOST_WIDE_INT
+static inline unsigned TARGET_WIDE_INT
 target_size_max ()
 {
-  return tree_to_uhwi (TYPE_MAX_VALUE (size_type_node));
+  return tree_to_utwi (TYPE_MAX_VALUE (size_type_node));
 }
 
 /* A straightforward mapping from the execution character set to the host
@@ -4390,10 +4390,10 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
     }
 
   /* The size of the destination as in snprintf(dest, size, ...).  */
-  unsigned HOST_WIDE_INT dstsize = HOST_WIDE_INT_M1U;
+  unsigned TARGET_WIDE_INT dstsize = TARGET_WIDE_INT_M1U;
 
   /* The size of the destination determined by __builtin_object_size.  */
-  unsigned HOST_WIDE_INT objsize = HOST_WIDE_INT_M1U;
+  unsigned TARGET_WIDE_INT objsize = TARGET_WIDE_INT_M1U;
 
   /* Zero-based buffer size argument number (snprintf and vsnprintf).  */
   unsigned idx_dstsize = UINT_MAX;
@@ -4591,7 +4591,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
 
       if (TREE_CODE (size) == INTEGER_CST)
 	{
-	  dstsize = tree_to_uhwi (size);
+	  dstsize = tree_to_utwi (size);
 	  /* No object can be larger than SIZE_MAX bytes (half the address
 	     space) on the target.
 	     The functions are defined only for output of at most INT_MAX
