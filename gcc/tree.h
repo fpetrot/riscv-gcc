@@ -5148,17 +5148,23 @@ extern bool tree_int_cst_equal (const_tree, const_tree);
 
 /* The following predicates are safe to call with a null argument.  */
 extern bool tree_fits_shwi_p (const_tree) ATTRIBUTE_PURE;
+extern bool tree_fits_stwi_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_poly_int64_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_uhwi_p (const_tree) ATTRIBUTE_PURE;
+extern bool tree_fits_utwi_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_poly_uint64_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_sanitize_code_type_p (const_tree) ATTRIBUTE_PURE;
 
 
 extern HOST_WIDE_INT tree_to_shwi (const_tree)
   ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
+__extension__ extern TARGET_WIDE_INT tree_to_stwi (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
 extern poly_int64 tree_to_poly_int64 (const_tree)
   ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
 extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
+__extension__ extern unsigned TARGET_WIDE_INT tree_to_utwi (const_tree)
   ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
 extern poly_uint64 tree_to_poly_uint64 (const_tree)
   ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;

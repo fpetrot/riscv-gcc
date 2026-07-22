@@ -6610,6 +6610,17 @@ tree_fits_shwi_p (const_tree t)
 	  && wi::fits_shwi_p (wi::to_widest (t)));
 }
 
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in a signed TARGET_WIDE_INT.  */
+
+bool
+tree_fits_stwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_stwi_p (wi::to_widest (t)));
+}
+
 /* Return true if T is an INTEGER_CST or POLY_INT_CST whose numerical
    value (extended according to TYPE_UNSIGNED) fits in a poly_int64.  */
 
@@ -6639,6 +6650,18 @@ tree_fits_uhwi_p (const_tree t)
 	  && TREE_CODE (t) == INTEGER_CST
 	  && wi::fits_uhwi_p (wi::to_widest (t)));
 }
+
+/* Return true if T is an INTEGER_CST whose numerical value (extended
+   according to TYPE_UNSIGNED) fits in an unsigned TARGET_WIDE_INT.  */
+
+bool
+tree_fits_utwi_p (const_tree t)
+{
+  return (t != NULL_TREE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && wi::fits_utwi_p (wi::to_widest (t)));
+}
+
 
 /* Return true if T is an INTEGER_CST or POLY_INT_CST whose numerical
    value (extended according to TYPE_UNSIGNED) fits in a poly_uint64.  */
@@ -6679,13 +6702,38 @@ HOST_WIDE_INT
 tree_to_shwi (const_tree t)
 {
 // FIXME disable assert because of 128-bit constant do not fit in 64-bit host words
+// To avoid emitting to much warnings, check if the actual value fits
 #if 0
   gcc_assert (tree_fits_shwi_p (t));
 #else
-  if (!tree_fits_shwi_p (t))
-    printf("possible 128-bit constant overflow with current gcc configuration\n");
+  __int128_t out = TREE_INT_CST_ELT (t, 0);
+  if (!tree_fits_shwi_p (t) && (out > (__int128_t)INT64_MAX || out < (__int128_t)INT64_MIN))
+    printf("possible 128-bit constant overflow with current gcc configuration. signed src = %W\n", out);
 #endif
   return TREE_INT_CST_LOW (t);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in a signed TARGET_WIDE_INT.  Return that
+   TARGET_WIDE_INT.  */
+
+TARGET_WIDE_INT
+tree_to_stwi (const_tree t)
+{
+  gcc_assert (tree_fits_stwi_p (t));
+
+  unsigned HOST_WIDE_INT low_val  = TREE_INT_CST_ELT (t, 0);
+  unsigned TARGET_WIDE_INT lo = (unsigned TARGET_WIDE_INT) low_val;
+
+  if (TREE_INT_CST_EXT_NUNITS (t) == 2)
+    {
+      unsigned HOST_WIDE_INT high_val = TREE_INT_CST_ELT (t, 1);
+      unsigned TARGET_WIDE_INT hi = (unsigned TARGET_WIDE_INT) high_val;
+
+      return (hi << 64) | lo;
+    }
+  else
+    return ((TARGET_WIDE_INT) (((low_val >> (HOST_BITS_PER_WIDE_INT - 1)) & 1) == 0 ? 0 : HOST_WIDE_INT_M1U) << HOST_BITS_PER_WIDE_INT) | lo;
 }
 
 /* T is an INTEGER_CST whose numerical value (extended according to
@@ -6696,13 +6744,38 @@ unsigned HOST_WIDE_INT
 tree_to_uhwi (const_tree t)
 {
 // FIXME disable assert because of 128-bit constant do not fit in 64-bit host words
+// To avoid emitting to much warnings, check if the actual value fits
 #if 0
   gcc_assert (tree_fits_uhwi_p (t));
 #else
-  if (!tree_fits_uhwi_p (t))
-    printf("possible 128-bit constant overflow with current gcc configuration\n");
+  // __uint128_t out = TREE_INT_CST_ELT (t, 0);
+  // if (!tree_fits_uhwi_p (t) && out > (__uint128_t)UINT64_MAX)
+  //   printf("possible 128-bit constant overflow with current gcc configuration. unsigned src = %W\n", out);
 #endif
   return TREE_INT_CST_LOW (t);
+}
+
+/* T is an INTEGER_CST whose numerical value (extended according to
+   TYPE_UNSIGNED) fits in an unsigned TARGET_WIDE_INT.  Return that
+   TARGET_WIDE_INT.  */
+
+unsigned TARGET_WIDE_INT
+tree_to_utwi (const_tree t)
+{
+  gcc_assert (tree_fits_utwi_p (t));
+
+  unsigned HOST_WIDE_INT low_val  = TREE_INT_CST_ELT (t, 0);
+  unsigned TARGET_WIDE_INT lo = (unsigned TARGET_WIDE_INT) low_val;
+
+  if (TREE_INT_CST_EXT_NUNITS (t) == 2)
+    {
+      unsigned HOST_WIDE_INT high_val = TREE_INT_CST_ELT (t, 1);
+      unsigned TARGET_WIDE_INT hi = (unsigned TARGET_WIDE_INT) high_val;
+
+      return (hi << 64) | lo;
+    }
+  else
+    return lo;
 }
 
 /* T is an INTEGER_CST whose numerical value (extended according to

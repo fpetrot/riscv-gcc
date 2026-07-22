@@ -240,6 +240,7 @@ along with GCC; see the file COPYING3.  If not see
    possible to create fixed_wide_ints that have precisions greater than
    MAX_BITSIZE_MODE_ANY_INT.  This can be useful when representing a
    double-width multiplication result, for example.  */
+#include "hwint.h"
 #define WIDE_INT_MAX_INL_ELTS \
   ((MAX_BITSIZE_MODE_ANY_INT + HOST_BITS_PER_WIDE_INT) \
    / HOST_BITS_PER_WIDE_INT)
@@ -569,7 +570,9 @@ namespace wi
   template <typename T1, typename T2> WI_UNARY_RESULT (T1)
 
   UNARY_PREDICATE fits_shwi_p (const T &);
+  UNARY_PREDICATE fits_stwi_p (const T &);
   UNARY_PREDICATE fits_uhwi_p (const T &);
+  UNARY_PREDICATE fits_utwi_p (const T &);
   UNARY_PREDICATE neg_p (const T &, signop = SIGNED);
 
   template <typename T>
@@ -1921,6 +1924,37 @@ wi::primitive_int_traits <T, signed_p>::decompose (HOST_WIDE_INT *scratch,
   return wi::storage_ref (scratch, 2, precision);
 }
 
+// TARGET_WIDE_INT can be a non-iso c type
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+// Specialize for TARGET_WIDE_INT since it can be greater than HOST_WIDE_INT
+template <>
+inline wi::storage_ref
+wi::primitive_int_traits <TARGET_WIDE_INT, true>::decompose (HOST_WIDE_INT *scratch,
+						   unsigned int precision, TARGET_WIDE_INT x)
+{
+  scratch[0] = (HOST_WIDE_INT) x;
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    return wi::storage_ref (scratch, 1, precision);
+  scratch[1] = (HOST_WIDE_INT) (x >> 64);
+  return wi::storage_ref (scratch, 2, precision);
+}
+
+template <>
+inline wi::storage_ref
+wi::primitive_int_traits <unsigned TARGET_WIDE_INT, false>::decompose (HOST_WIDE_INT *scratch,
+						   unsigned int precision, unsigned TARGET_WIDE_INT x)
+{
+  scratch[0] = (HOST_WIDE_INT) x;
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    return wi::storage_ref (scratch, 1, precision);
+  scratch[1] = (HOST_WIDE_INT) (x >> 64);
+  return wi::storage_ref (scratch, 2, precision);
+}
+
+#pragma GCC diagnostic pop
+
 /* Allow primitive C types to be used in wi:: routines.  */
 namespace wi
 {
@@ -1957,6 +1991,18 @@ namespace wi
   struct int_traits <unsigned long long>
     : public primitive_int_traits <unsigned long long, false> {};
 #endif
+
+// TARGET_WIDE_INT can be a non-iso c type
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+  template <>
+  struct int_traits <TARGET_WIDE_INT>
+    : public primitive_int_traits <TARGET_WIDE_INT, true> {};
+
+  template <>
+  struct int_traits <unsigned TARGET_WIDE_INT>
+    : public primitive_int_traits <unsigned TARGET_WIDE_INT, false> {};
+#pragma GCC diagnostic pop
 }
 
 namespace wi
@@ -2205,6 +2251,15 @@ wi::fits_shwi_p (const T &x)
   return xi.len == 1;
 }
 
+/* Return true if X fits in a TARGET_WIDE_INT with no loss of precision.  */
+template <typename T>
+inline bool
+wi::fits_stwi_p (const T &x)
+{
+  WIDE_INT_REF_FOR (T) xi (x);
+  return xi.len <= TARGET_BITS_PER_WIDE_INT / HOST_BITS_PER_WIDE_INT;
+}
+
 /* Return true if X fits in an unsigned HOST_WIDE_INT with no loss of
    precision.  */
 template <typename T>
@@ -2217,6 +2272,20 @@ wi::fits_uhwi_p (const T &x)
   if (xi.len == 1)
     return xi.slow () >= 0;
   return xi.len == 2 && xi.uhigh () == 0;
+}
+
+/* Return true if X fits in an unsigned TARGET_WIDE_INT with no loss of
+   precision.  */
+template <typename T>
+inline bool
+wi::fits_utwi_p (const T &x)
+{
+  WIDE_INT_REF_FOR (T) xi (x);
+  if (xi.precision <= TARGET_BITS_PER_WIDE_INT)
+    return true;
+  if (xi.len == 1)
+    return xi.slow () >= 0;
+  return xi.len == 2 && ((xi.uhigh () >> (HOST_BITS_PER_WIDE_INT - 1)) & 1) == 0;
 }
 
 /* Return true if X is negative based on the interpretation of SGN.
