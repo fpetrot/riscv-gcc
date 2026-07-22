@@ -240,14 +240,14 @@
 
 
 (define_insn "*add.uw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (zero_extend:DI
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(plus:X (zero_extend:X
 		   (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:DI 2 "register_operand" "r")))]
+		 (match_operand:X 2 "register_operand" "r")))]
   "(TARGET_64BIT || TARGET_128BIT) && TARGET_ZBA"
   "add.uw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<X:MODE>")])
 
 (define_insn "riscv_slli_uw"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -279,6 +279,11 @@
    (set (match_dup 0) (plus:DI (match_dup 6) (match_dup 5)))])
 
 ;; ZBB extension.
+
+(define_expand "clzti2"
+  [(set (match_operand:TI 0 "register_operand")
+	(clz:TI (match_operand:TI 1 "register_operand")))]
+  "TARGET_128BIT && (TARGET_ZBB || TARGET_XTHEADBB)")
 
 (define_expand "clzdi2"
   [(set (match_operand:DI 0 "register_operand")
@@ -382,6 +387,14 @@
   [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "DI")])
 
+(define_insn "*<bitmanip_optab>di2"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+        (clz_ctz_pcnt:TI (match_operand:TI 1 "register_operand" "r")))]
+  "TARGET_128BIT && TARGET_ZBB"
+  "<bitmanip_insn>\t%0,%1"
+  [(set_attr "type" "<bitmanip_insn>")
+   (set_attr "mode" "TI")])
+
 (define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
         (zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
@@ -402,6 +415,16 @@
    l<SHORT:size>\t%0,%1"
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
+
+(define_expand "rotrti3"
+  [(set (match_operand:TI 0 "register_operand")
+	(rotatert:TI (match_operand:TI 1 "register_operand")
+		     (match_operand:QI 2 "arith_operand")))]
+  "TARGET_128BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)"
+{
+  if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
+    FAIL;
+})
 
 (define_expand "rotrdi3"
   [(set (match_operand:DI 0 "register_operand")
@@ -432,7 +455,17 @@
   if (TARGET_64BIT)
     {
       rtx t = gen_reg_rtx (DImode);
-      emit_insn (gen_rotrsi3_sext (t, operands[1], operands[2]));
+      emit_insn (gen_rotrdisi3_sext (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+  else if (TARGET_128BIT)
+    {
+      rtx t = gen_reg_rtx (TImode);
+      emit_insn (gen_rotrtisi3_sext (t, operands[1], operands[2]));
       t = gen_lowpart (SImode, t);
       SUBREG_PROMOTED_VAR_P (t) = 1;
       SUBREG_PROMOTED_SET (t, SRP_SIGNED);
@@ -445,13 +478,21 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:QI 2 "arith_operand" "rI")))]
-  "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "rotrsi3_sext"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+(define_insn "*rotrti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(rotatert:TI (match_operand:TI 1 "register_operand" "r")
+		     (match_operand:QI 2 "arith_operand" "rI")))]
+  "TARGET_128BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "ror%i2\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "rotr<mode>si3_sext"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(sign_extend:X (rotatert:SI (match_operand:SI 1 "register_operand" "r")
                                  (match_operand:QI 2 "arith_operand" "rI"))))]
   "(TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2%~\t%0,%1,%2"
@@ -471,7 +512,7 @@
                   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB || TARGET_ZBKB"
 {
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_128BIT)
     {
       rtx t = gen_reg_rtx (DImode);
       emit_insn (gen_rotlsi3_sext (t, operands[1], operands[2]));
@@ -545,6 +586,11 @@
   "orc.b\t%0,%1"
   [(set_attr "type" "bitmanip")])
 
+(define_expand "bswapti2"
+  [(set (match_operand:TI 0 "register_operand")
+	(bswap:TI (match_operand:TI 1 "register_operand")))]
+  "TARGET_128BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)")
+
 (define_expand "bswapdi2"
   [(set (match_operand:DI 0 "register_operand")
 	(bswap:DI (match_operand:DI 1 "register_operand")))]
@@ -573,18 +619,28 @@
 {
   rtx tmp = gen_reg_rtx (word_mode);
   rtx newop1 = gen_lowpart (word_mode, operands[1]);
-  if (TARGET_64BIT)
+  if (TARGET_128BIT)
+    emit_insn (gen_bswapti2 (tmp, newop1));
+  else if (TARGET_64BIT)
     emit_insn (gen_bswapdi2 (tmp, newop1));
   else
     emit_insn (gen_bswapsi2 (tmp, newop1));
   rtx tmp1 = gen_reg_rtx (word_mode);
-  if (TARGET_64BIT)
+  if (TARGET_128BIT)
+    emit_insn (gen_lshrti3 (tmp1, tmp, GEN_INT (128 - 16)));
+  else if (TARGET_64BIT)
     emit_insn (gen_lshrdi3 (tmp1, tmp, GEN_INT (64 - 16)));
   else
     emit_insn (gen_lshrsi3 (tmp1, tmp, GEN_INT (32 - 16)));
   emit_move_insn (operands[0], gen_lowpart (HImode, tmp1));
   DONE;
 })
+
+(define_expand "<bitmanip_optab>ti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+        (bitmanip_minmax:TI (match_operand:TI 1 "register_operand" "r")
+                            (match_operand:TI 2 "register_operand" "r")))]
+  "TARGET_128BIT && TARGET_ZBB")
 
 (define_expand "<bitmanip_optab>di3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -604,6 +660,18 @@
       operands[1] = force_reg (DImode, gen_rtx_SIGN_EXTEND (DImode, operands[1]));
       operands[2] = force_reg (DImode, gen_rtx_SIGN_EXTEND (DImode, operands[2]));
       emit_insn (gen_<bitmanip_optab>di3 (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+  else if (TARGET_128BIT)
+    {
+      rtx t = gen_reg_rtx (TImode);
+      operands[1] = force_reg (TImode, gen_rtx_SIGN_EXTEND (TImode, operands[1]));
+      operands[2] = force_reg (TImode, gen_rtx_SIGN_EXTEND (TImode, operands[2]));
+      emit_insn (gen_<bitmanip_optab>ti3 (t, operands[1], operands[2]));
       t = gen_lowpart (SImode, t);
       SUBREG_PROMOTED_VAR_P (t) = 1;
       SUBREG_PROMOTED_SET (t, SRP_SIGNED);
