@@ -8365,7 +8365,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
   */
   if (letter == '~')
     {
-      if (TARGET_64BIT)
+      if (TARGET_64BIT || TARGET_128BIT)
 	fputc ('w', file);
       return;
     }

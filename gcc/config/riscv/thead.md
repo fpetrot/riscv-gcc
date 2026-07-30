@@ -624,7 +624,7 @@
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand"
          " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
-  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
+  "(TARGET_64BIT || TARGET_128BIT) && TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
   "@
    th.extu\t%0,%1,31,0
    th.lwuia\t%0,%1

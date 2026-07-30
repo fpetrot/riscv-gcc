@@ -1654,12 +1654,12 @@
 ;; use the sign extending shifts/rotates.  And with the number of low bits
 ;; masked off by the AND matching the final shift count we can turn this mess
 ;; into simple "w" mode left shift.
-(define_insn "rotate_with_masking_to_shift"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (sign_extend:DI (and:SI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+(define_insn "rotate_with_masking_to_shift<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (sign_extend:X (and:SI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
                                              (match_operand 2 "const_int_operand" "i"))
                                 (match_operand 3 "consecutive_bits_operand" "i"))))]
-  "(TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)
+  "((TARGET_64BIT || TARGET_128BIT) && (TARGET_ZBB || TARGET_ZBKB)
     && INTVAL (operands[2]) < 32
     && (INTVAL (operands[3]) & HOST_WIDE_INT_C (0xffffffff80000000)) == HOST_WIDE_INT_C (0xffffffff80000000)
     && ctz_hwi (INTVAL (operands[3])) == 32 - INTVAL (operands[2]))"
@@ -1668,5 +1668,5 @@
   return "slliw\t%0,%1,%2";
 }
   [(set_attr "type" "shift")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<X:MODE>")])
 
