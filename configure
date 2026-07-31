@@ -9508,6 +9508,11 @@ else
 fi
 
 
+# Force the use of the init printf function provided by libiberty,
+# to initialize 128bit modifiers.
+stage1_ldflags="$stage1_ldflags -Wl,-u,init_printf_uint128"
+
+
 
 # Libraries to use for stage2 and later builds.
 
@@ -9557,6 +9562,11 @@ case $target in
     fi
   ;;
 esac
+
+# Force the use of the init printf function provided by libiberty,
+# to initialize 128bit modifiers.
+poststage1_ldflags="$poststage1_ldflags -Wl,-u,init_printf_uint128"
+
 
 
 # GCC GRAPHITE dependency isl.

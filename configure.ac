@@ -1948,6 +1948,11 @@ AC_ARG_WITH(stage1-ldflags,
      -a "$have_static_libs" = yes; then
    stage1_ldflags="-static-libstdc++ -static-libgcc"
  fi])
+
+# Force the use of the init printf function provided by libiberty,
+# to initialize 128bit modifiers.
+stage1_ldflags="$stage1_ldflags -Wl,-u,init_printf_uint128"
+
 AC_SUBST(stage1_ldflags)
 
 # Libraries to use for stage2 and later builds.
@@ -1991,6 +1996,11 @@ case $target in
     fi
   ;;
 esac
+
+# Force the use of the init printf function provided by libiberty,
+# to initialize 128bit modifiers.
+poststage1_ldflags="$poststage1_ldflags -Wl,-u,init_printf_uint128"
+
 AC_SUBST(poststage1_ldflags)
 
 # GCC GRAPHITE dependency isl.
