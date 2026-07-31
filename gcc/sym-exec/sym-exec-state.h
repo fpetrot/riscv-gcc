@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef SYM_EXEC_STATE_H
 #define SYM_EXEC_STATE_H
 
-#define MAX_VALUE_SIZE 64
+#define MAX_VALUE_SIZE 128
 
 #include "sym-exec-expr-is-a-helper.h"
 
